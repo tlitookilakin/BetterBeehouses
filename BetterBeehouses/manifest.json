@@ -6,5 +6,5 @@
   "UniqueID": "tlitookilakin.BetterBeehouses",
   "EntryDll": "BetterBeehouses.dll",
   "MinimumApiVersion": "3.13",
-  "UpdateKeys": [ "GitHub:tlitookilakin/BetterBeehouses", "Nexus:10996" ]
+  "UpdateKeys": [ "GitHub:tlitookilakin/BetterBeehouses", "Nexus:10996", "ModDrop:1105633" ]
 }
