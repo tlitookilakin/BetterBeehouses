@@ -95,7 +95,6 @@ namespace BetterBeehouses
 
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
-            ModEntry.monitor.Log(isWinter.ToString());
             return isWinter && !Utils.GetProduceHere(loc, ModEntry.config.ProduceInWinter);
         }
         public static int GetProduceDays()
