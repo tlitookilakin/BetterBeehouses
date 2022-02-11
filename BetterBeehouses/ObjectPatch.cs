@@ -43,6 +43,28 @@ namespace BetterBeehouses
             .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetProduceDays")))
             .Finish();
 
+        private static ILHelper checkForActionPatch = new ILHelper("Object: Check for Action")
+            .SkipTo(new CodeInstruction[]
+            {
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Call, typeof(Object).MethodNamed("get_name")),
+                new(OpCodes.Ldstr,"Bee House"),
+                new(OpCodes.Callvirt,typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+            })
+            .SkipTo(new CodeInstruction[]
+            {
+                new(OpCodes.Call,typeof(Game1).MethodNamed("get_currentLocation")),
+                new(OpCodes.Call,typeof(Game1).MethodNamed("GetSeasonForLocation")),
+                new(OpCodes.Ldstr, "winter"),
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+            })
+            .Add(new CodeInstruction[]
+            {
+                new(OpCodes.Call,typeof(Game1).MethodNamed("get_currentLocation")),
+                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("CantProduceToday"))
+            })
+            .Finish();
+
         //---------
 
         [HarmonyPatch("minutesElapsed")]
@@ -61,10 +83,19 @@ namespace BetterBeehouses
                 yield return code;
         }
 
+        [HarmonyPatch("checkForAction")]
+        [HarmonyTranspiler]
+        internal static IEnumerable<CodeInstruction> checkForAction(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (var code in checkForActionPatch.Run(instructions))
+                yield return code;
+        }
+
         //--------
 
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
+            ModEntry.monitor.Log(isWinter.ToString());
             return isWinter && !Utils.GetProduceHere(loc, ModEntry.config.ProduceInWinter);
         }
         public static int GetProduceDays()
