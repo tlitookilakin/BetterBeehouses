@@ -1,0 +1,17 @@
+﻿{
+  "config.title": "Better Beehouses",
+  "config.daysToProduce.name": "Days to produce",
+  "config.daysToProduce.desc": "How many days it takes to produce honey",
+  "config.usableIn.name": "Usable in",
+  "config.usableIn.desc": "Places bee houses can produce honey",
+  "config.produceInWinter.name": "Produce in winter",
+  "config.produceInWinter.desc": "Places bee houses can produce in winter",
+  "config.usePottedFlowers.name": "Use potted flowers",
+  "config.usePottedFlowers.desc": "Places bee houses will use potted flowers",
+  "config.usableOptions.Outdoors": "Outdoors",
+  "config.usableOptions.Greenhouse": "Outdoors & Greenhouse",
+  "config.usableOptions.Anywhere": "Anywhere",
+  "config.produceWhere.Never": "Nowhere",
+  "config.produceWhere.Indoors": "Indoors",
+  "config.produceWhere.Always": "Anywhere"
+}
