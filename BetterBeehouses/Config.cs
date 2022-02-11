@@ -11,6 +11,7 @@ namespace BetterBeehouses
         public ProduceWhere UsePottedFlowers { get; set; }
         public UsableOptions UsableIn { get; set; }
         public int DaysToProduce { get; set; }
+        public int FlowerRange { get; set; }
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -20,6 +21,7 @@ namespace BetterBeehouses
             UsePottedFlowers = ProduceWhere.Always;
             UsableIn = UsableOptions.Greenhouse;
             DaysToProduce = 4;
+            FlowerRange = 5;
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -38,6 +40,13 @@ namespace BetterBeehouses
                 () => i18n.Get("config.daysToProduce.name"),
                 () => i18n.Get("config.daysToProduce.desc"),
                 1, 7
+            );
+            api.AddNumberOption(manifest,
+                () => FlowerRange,
+                (n) => { FlowerRange = n; },
+                () => i18n.Get("config.flowerRange.name"),
+                () => i18n.Get("config.flowerRange.desc"),
+                1, 9
             );
             api.AddTextOption(manifest,
                 () => UsableIn.ToString(),

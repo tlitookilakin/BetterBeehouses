@@ -53,6 +53,15 @@ namespace BetterBeehouses
             })
             .SkipTo(new CodeInstruction[]
             {
+                new(OpCodes.Callvirt, typeof(Character).MethodNamed("get_currentLocation")),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, typeof(Object).FieldNamed("tileLocation"))
+            })
+            .Skip()
+            .Remove()
+            .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetSearchRange")))
+            .SkipTo(new CodeInstruction[]
+            {
                 new(OpCodes.Call,typeof(Game1).MethodNamed("get_currentLocation")),
                 new(OpCodes.Call,typeof(Game1).MethodNamed("GetSeasonForLocation")),
                 new(OpCodes.Ldstr, "winter"),
@@ -96,6 +105,10 @@ namespace BetterBeehouses
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
             return isWinter && !Utils.GetProduceHere(loc, ModEntry.config.ProduceInWinter);
+        }
+        public static int GetSearchRange()
+        {
+            return ModEntry.config.FlowerRange;
         }
         public static int GetProduceDays()
         {

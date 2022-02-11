@@ -2,6 +2,8 @@
   "config.title": "Better Beehouses",
   "config.daysToProduce.name": "Days to produce",
   "config.daysToProduce.desc": "How many days it takes to produce honey",
+  "config.flowerRange.name": "Flower Range",
+  "config.flowerRange.desc": "The range to search for flowers in",
   "config.usableIn.name": "Usable in",
   "config.usableIn.desc": "Places bee houses can produce honey",
   "config.produceInWinter.name": "Produce in winter",
