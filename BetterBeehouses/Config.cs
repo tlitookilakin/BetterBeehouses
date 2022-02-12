@@ -13,6 +13,8 @@ namespace BetterBeehouses
         public int DaysToProduce { get; set; }
         public int FlowerRange { get; set; }
 
+        public float ValueMultiplier { get; set; }
+
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
         public void ResetToDefault()
@@ -22,6 +24,7 @@ namespace BetterBeehouses
             UsableIn = UsableOptions.Greenhouse;
             DaysToProduce = 4;
             FlowerRange = 5;
+            ValueMultiplier = 1f;
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -39,14 +42,14 @@ namespace BetterBeehouses
                 (n) => { DaysToProduce = n; },
                 () => i18n.Get("config.daysToProduce.name"),
                 () => i18n.Get("config.daysToProduce.desc"),
-                1, 7
+                0, 8
             );
             api.AddNumberOption(manifest,
                 () => FlowerRange,
                 (n) => { FlowerRange = n; },
                 () => i18n.Get("config.flowerRange.name"),
                 () => i18n.Get("config.flowerRange.desc"),
-                1, 9
+                1, 14
             );
             api.AddTextOption(manifest,
                 () => UsableIn.ToString(),
@@ -63,7 +66,7 @@ namespace BetterBeehouses
                  () => i18n.Get("config.produceInWinter.desc"),
                  Enum.GetNames(typeof(ProduceWhere)),
                  (s) => TranslatedOption("produceWhere", s)
-             );
+            );
             api.AddTextOption(manifest,
                  () => UsePottedFlowers.ToString(),
                  (s) => { UsePottedFlowers = (ProduceWhere)Enum.Parse(typeof(ProduceWhere), s); },
@@ -71,7 +74,14 @@ namespace BetterBeehouses
                  () => i18n.Get("config.usePottedFlowers.desc"),
                  Enum.GetNames(typeof(ProduceWhere)),
                  (s) => TranslatedOption("produceWhere", s)
-             );
+            );
+            api.AddNumberOption(manifest,
+                () => ValueMultiplier,
+                (n) => { ValueMultiplier = n; },
+                () => i18n.Get("config.valueMultiplier.name"),
+                () => i18n.Get("config.valueMultiplier.desc"),
+                .1f, 2f, .1f
+            );
         }
         public string TranslatedOption(string enumName, string value)
         {

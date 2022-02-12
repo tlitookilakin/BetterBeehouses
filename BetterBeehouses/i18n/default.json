@@ -10,6 +10,8 @@
   "config.produceInWinter.desc": "Places bee houses can produce in winter",
   "config.usePottedFlowers.name": "Use potted flowers",
   "config.usePottedFlowers.desc": "Places bee houses will use potted flowers",
+  "config.valueMultiplier.name": "Honey price multiplier",
+  "config.valueMultiplier.desc": "Honey produced by bee houses is multiplied by this",
   "config.usableOptions.Outdoors": "Outdoors",
   "config.usableOptions.Greenhouse": "Outdoors & Greenhouse",
   "config.usableOptions.Anywhere": "Anywhere",
