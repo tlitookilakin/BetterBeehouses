@@ -31,5 +31,11 @@ namespace BetterBeehouses
         {
             return where is not Config.ProduceWhere.Never && (!loc.isOutdoors || where is Config.ProduceWhere.Always);
         }
+        public static Crop CropFromObj(StardewValley.Object obj)
+        {
+            Crop ret = new();
+            ret.indexOfHarvest.Value = obj.parentSheetIndex;
+            return ret;
+        }
     }
 }

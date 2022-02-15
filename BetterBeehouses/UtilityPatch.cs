@@ -50,11 +50,24 @@ namespace BetterBeehouses
         }
         public static Crop GetPotCrop(GameLocation loc, Vector2 tile, Func<Crop, bool> extraCheck)
         {
-            if(loc.objects.TryGetValue(tile, out StardewValley.Object obj) && obj is IndoorPot pot)
+            if(loc.objects.TryGetValue(tile, out StardewValley.Object obj))
             {
-                Crop crop = pot.hoeDirt.Value?.crop;
-                return Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers) && IsGrown(crop, extraCheck) && new StardewValley.Object(crop.indexOfHarvest.Value, 1).Category == -80 ?
-                    crop : null;
+                if (obj is IndoorPot pot) //pot crop
+                {
+                    if (ModEntry.config.UseForageFlowers && pot.heldObject.Value != null) //forage in pot
+                    {
+                        var ho = pot.heldObject.Value;
+                        if (ho.CanBeGrabbed && ho.Category == -80)
+                            return Utils.CropFromObj(ho);
+                    }
+                    Crop crop = pot.hoeDirt.Value?.crop;
+                    return Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers) && IsGrown(crop, extraCheck) && new StardewValley.Object(crop.indexOfHarvest.Value, 1).Category == -80 ?
+                        crop : null; //flower in pot
+                } else
+                {
+                    return ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && obj.Category == -80 ? Utils.CropFromObj(obj) : null;
+                    //non-pot forage
+                }
             }
             return null;
         }

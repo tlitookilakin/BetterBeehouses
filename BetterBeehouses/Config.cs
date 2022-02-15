@@ -12,7 +12,7 @@ namespace BetterBeehouses
         public UsableOptions UsableIn { get; set; }
         public int DaysToProduce { get; set; }
         public int FlowerRange { get; set; }
-
+        public bool UseForageFlowers { get; set; }
         public float ValueMultiplier { get; set; }
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
@@ -25,6 +25,7 @@ namespace BetterBeehouses
             DaysToProduce = 4;
             FlowerRange = 5;
             ValueMultiplier = 1f;
+            UseForageFlowers = false;
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -39,21 +40,21 @@ namespace BetterBeehouses
             api.AddSectionTitle(manifest, () => i18n.Get("config.title"));
             api.AddNumberOption(manifest,
                 () => DaysToProduce,
-                (n) => { DaysToProduce = n; },
+                (n) => DaysToProduce = n,
                 () => i18n.Get("config.daysToProduce.name"),
                 () => i18n.Get("config.daysToProduce.desc"),
                 1, 7
             );
             api.AddNumberOption(manifest,
                 () => FlowerRange,
-                (n) => { FlowerRange = n; },
+                (n) => FlowerRange = n,
                 () => i18n.Get("config.flowerRange.name"),
                 () => i18n.Get("config.flowerRange.desc"),
                 1, 14
             );
             api.AddTextOption(manifest,
                 () => UsableIn.ToString(),
-                (s) => { UsableIn = (UsableOptions)Enum.Parse(typeof(UsableOptions), s); },
+                (s) => UsableIn = (UsableOptions)Enum.Parse(typeof(UsableOptions), s),
                 () => i18n.Get("config.usableIn.name"),
                 () => i18n.Get("config.usableIn.desc"),
                 Enum.GetNames(typeof(UsableOptions)),
@@ -61,7 +62,7 @@ namespace BetterBeehouses
             ); 
             api.AddTextOption(manifest,
                  () => ProduceInWinter.ToString(),
-                 (s) => { ProduceInWinter = (ProduceWhere)Enum.Parse(typeof(ProduceWhere), s); },
+                 (s) => ProduceInWinter = (ProduceWhere)Enum.Parse(typeof(ProduceWhere), s),
                  () => i18n.Get("config.produceInWinter.name"),
                  () => i18n.Get("config.produceInWinter.desc"),
                  Enum.GetNames(typeof(ProduceWhere)),
@@ -69,7 +70,7 @@ namespace BetterBeehouses
             );
             api.AddTextOption(manifest,
                  () => UsePottedFlowers.ToString(),
-                 (s) => { UsePottedFlowers = (ProduceWhere)Enum.Parse(typeof(ProduceWhere), s); },
+                 (s) => UsePottedFlowers = (ProduceWhere)Enum.Parse(typeof(ProduceWhere), s),
                  () => i18n.Get("config.usePottedFlowers.name"),
                  () => i18n.Get("config.usePottedFlowers.desc"),
                  Enum.GetNames(typeof(ProduceWhere)),
@@ -77,10 +78,16 @@ namespace BetterBeehouses
             );
             api.AddNumberOption(manifest,
                 () => ValueMultiplier,
-                (n) => { ValueMultiplier = n; },
+                (n) => ValueMultiplier = n,
                 () => i18n.Get("config.valueMultiplier.name"),
                 () => i18n.Get("config.valueMultiplier.desc"),
                 .1f, 2f, .1f
+            );
+            api.AddBoolOption(manifest,
+                () => UseForageFlowers,
+                (b) => UseForageFlowers = b,
+                () => i18n.Get("config.useForage.name"),
+                () => i18n.Get("config.useForage.desc")
             );
         }
         public string TranslatedOption(string enumName, string value)

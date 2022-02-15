@@ -18,7 +18,7 @@ namespace BetterBeehouses
 
         public override void Entry(IModHelper helper)
         {
-            Monitor.Log("Starting up...", LogLevel.Debug);
+            Monitor.Log(helper.Translation.Get("general.startup"), LogLevel.Debug);
 
             monitor = Monitor;
             ModEntry.helper = Helper;

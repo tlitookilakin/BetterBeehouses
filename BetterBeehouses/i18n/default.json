@@ -1,4 +1,5 @@
 ﻿{
+  "general.startup": "Starting up...",
   "config.title": "Better Beehouses",
   "config.daysToProduce.name": "Days to produce",
   "config.daysToProduce.desc": "How many days it takes to produce honey",
@@ -12,6 +13,8 @@
   "config.usePottedFlowers.desc": "Places bee houses will use potted flowers",
   "config.valueMultiplier.name": "Honey price multiplier",
   "config.valueMultiplier.desc": "Honey produced by bee houses is multiplied by this",
+  "config.useForage.name": "Use Forage Flowers",
+  "config.useForage.desc": "If bee houses should detect forage flowers",
   "config.usableOptions.Outdoors": "Outdoors",
   "config.usableOptions.Greenhouse": "Outdoors & Greenhouse",
   "config.usableOptions.Anywhere": "Anywhere",
