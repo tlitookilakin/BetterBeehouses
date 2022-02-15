@@ -42,7 +42,7 @@ namespace BetterBeehouses
                 (n) => { DaysToProduce = n; },
                 () => i18n.Get("config.daysToProduce.name"),
                 () => i18n.Get("config.daysToProduce.desc"),
-                0, 8
+                1, 7
             );
             api.AddNumberOption(manifest,
                 () => FlowerRange,

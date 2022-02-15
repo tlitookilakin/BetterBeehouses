@@ -182,11 +182,11 @@ namespace BetterBeehouses
         }
         public static int GetProduceTime(int timeOfDay)
         {
-            return (ModEntry.config.DaysToProduce > 0) ? Utility.CalculateMinutesUntilMorning(timeOfDay, ModEntry.config.DaysToProduce) : 1;
+            return (ModEntry.config.DaysToProduce > 1) ? Utility.CalculateMinutesUntilMorning(timeOfDay, ModEntry.config.DaysToProduce - 1) : 1;
         }
         public static int GetProduceDays()
         {
-            return ModEntry.config.DaysToProduce + 1;
+            return ModEntry.config.DaysToProduce;
         }
         public static bool CanProduceHere(GameLocation loc)
         {
