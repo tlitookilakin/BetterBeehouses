@@ -33,7 +33,7 @@ namespace BetterBeehouses
             if (!ModEntry.helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
                 return;
 
-            var api = ModEntry.helper.ModRegistry.GetApi<IGMCMAPI>("spacechase0.GenericModConfigMenu");
+            var api = ModEntry.helper.ModRegistry.GetApi<integration.IGMCMAPI>("spacechase0.GenericModConfigMenu");
 
             api.Register(manifest, ResetToDefault, () => ModEntry.helper.WriteConfig(this));
 

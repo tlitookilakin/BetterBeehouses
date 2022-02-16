@@ -5,7 +5,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using System;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.integration
 {
     public interface IGMCMAPI
     {

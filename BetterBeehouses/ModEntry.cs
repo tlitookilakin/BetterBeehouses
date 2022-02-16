@@ -16,6 +16,7 @@ namespace BetterBeehouses
         internal static Harmony harmony;
         internal static string ModID;
         internal static Config config;
+        internal static API api;
 
         public override void Entry(IModHelper helper)
         {
@@ -26,6 +27,7 @@ namespace BetterBeehouses
             harmony = new(ModManifest.UniqueID);
             ModID = ModManifest.UniqueID;
             config = helper.ReadConfig<Config>();
+            api = new();
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             harmony.PatchAll();
         }
@@ -34,6 +36,10 @@ namespace BetterBeehouses
             config.RegisterModConfigMenu(ModManifest);
             if (PFMPatch.setup())
                 monitor.Log(helper.Translation.Get("general.patchedModsWarning"),LogLevel.Warn);
+        }
+        public override object GetApi()
+        {
+            return api;
         }
     }
 }
