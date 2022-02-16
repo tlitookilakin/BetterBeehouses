@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using BetterBeehouses.integration;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using System;
@@ -31,6 +32,8 @@ namespace BetterBeehouses
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {
             config.RegisterModConfigMenu(ModManifest);
+            if (PFMPatch.setup())
+                monitor.Log(helper.Translation.Get("general.patchedModsWarning"),LogLevel.Warn);
         }
     }
 }
