@@ -34,7 +34,9 @@ namespace BetterBeehouses
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {
             config.RegisterModConfigMenu(ModManifest);
-            if (PFMPatch.setup())
+            bool modPatched = PFMPatch.setup();
+            modPatched = AutomatePatch.Setup() || modPatched;
+            if (modPatched)
                 monitor.Log(helper.Translation.Get("general.patchedModsWarning"),LogLevel.Warn);
         }
         public override object GetApi()

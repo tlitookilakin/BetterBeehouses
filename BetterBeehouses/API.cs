@@ -12,6 +12,10 @@ namespace BetterBeehouses
         {
             return !ObjectPatch.CantProduceToday(location.GetSeasonForLocation() == "Winter", location);
         }
+        public bool GetEnabledHere(GameLocation location, bool isWinter)
+        {
+            return !ObjectPatch.CantProduceToday(isWinter, location);
+        }
         public int GetSearchRadius()
         {
             return ModEntry.config.FlowerRange;
