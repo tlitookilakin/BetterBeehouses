@@ -236,7 +236,7 @@ namespace BetterBeehouses
                 }
                 else
                 {
-                    for(int i = 0; i < saved.Length; i++)
+                    for(int i = 0; i < marker; i++)
                     {
                         yield return saved[i];
                         saved[i] = null;
@@ -272,7 +272,7 @@ namespace BetterBeehouses
                 }
                 else
                 {
-                    for (int i = 0; i < saved.Length; i++)
+                    for (int i = 0; i < marker; i++)
                     {
                         yield return saved[i];
                         saved[i] = null;
@@ -399,7 +399,7 @@ namespace BetterBeehouses
                 {
                     boxes.Clear();
                     marker = 0;
-                    for (int i = 0; i < saved.Length; i++)
+                    for (int i = 0; i < marker; i++)
                     {
                         yield return saved[i];
                         saved[i] = null;

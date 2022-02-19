@@ -87,8 +87,9 @@ namespace BetterBeehouses.integration
                     new(OpCodes.Ldloc_0),
                     new(OpCodes.Ldsfld,typeof(Game1).FieldNamed("timeOfDay"))
                 })
-                .Remove()
-                .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetProduceDays")))
+                .Transform(new CodeInstruction[]{
+                    new(OpCodes.Call,typeof(Utility).MethodNamed("CalculateMinutesUntilMorning",new[]{typeof(int),typeof(int)}))
+                }, ObjectPatch.ChangeDays)
                 .Finish();
         }
         public static bool CantWorkHere(GameLocation loc)

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Netcode;
 using StardewValley;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -18,7 +19,7 @@ namespace BetterBeehouses
             .Skip(2)
             .Remove()
             .Add(new CodeInstruction[] { 
-                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("CanProduceHere"))
+                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(CanProduceHere)))
             })
             .Finish();
 
@@ -26,21 +27,20 @@ namespace BetterBeehouses
             .SkipTo(new CodeInstruction[] {
                 new(OpCodes.Callvirt, typeof(GameLocation).MethodNamed("GetSeasonForLocation")),
                 new(OpCodes.Ldstr, "winter"),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new[]{typeof(string)}))
             })
             .Add(new CodeInstruction[]
             {
                 new(OpCodes.Ldarg_1),
-                new(OpCodes.Call, typeof(ObjectPatch).MethodNamed("CantProduceToday"))
+                new(OpCodes.Call, typeof(ObjectPatch).MethodNamed(nameof(CantProduceToday)))
             })
-            .SkipTo(new CodeInstruction[]
-            {
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, typeof(Object).FieldNamed("minutesUntilReady")),
-                new(OpCodes.Ldsfld, typeof(Game1).FieldNamed("timeOfDay"))
+            .SkipTo(new CodeInstruction[] { 
+                new(OpCodes.Ldfld,typeof(Object).FieldNamed("minutesUntilReady")),
+                new(OpCodes.Ldsfld,typeof(Game1).FieldNamed("timeOfDay"))
             })
-            .Remove(2)
-            .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetProduceTime")))
+            .Transform(new CodeInstruction[]{
+                new(OpCodes.Call,typeof(Utility).MethodNamed("CalculateMinutesUntilMorning",new[]{typeof(int),typeof(int)}))
+            }, ChangeDays)
             .Finish();
 
         private static ILHelper dropDownPatch = new ILHelper("Object: Drop Down Action")
@@ -49,16 +49,15 @@ namespace BetterBeehouses
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, typeof(Object).MethodNamed("get_name")),
                 new(OpCodes.Ldstr,"Bee House"),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals", new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals", new[]{typeof(string)}))
             })
-            .SkipTo(new CodeInstruction[]
-            {
-                new(OpCodes.Ldarg_0),
+            .SkipTo(new CodeInstruction[] {
                 new(OpCodes.Ldfld,typeof(Object).FieldNamed("minutesUntilReady")),
                 new(OpCodes.Ldsfld,typeof(Game1).FieldNamed("timeOfDay"))
             })
-            .Remove()
-            .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetProduceDays")))
+            .Transform(new CodeInstruction[]{
+                new(OpCodes.Call,typeof(Utility).MethodNamed("CalculateMinutesUntilMorning",new[]{typeof(int),typeof(int)}))
+            }, ChangeDays)
             .Finish();
 
         private static ILHelper checkForActionPatch = new ILHelper("Object: Check for Action")
@@ -67,7 +66,7 @@ namespace BetterBeehouses
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, typeof(Object).MethodNamed("get_name")),
                 new(OpCodes.Ldstr,"Bee House"),
-                new(OpCodes.Callvirt,typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt,typeof(string).MethodNamed("Equals",new[]{typeof(string)}))
             })
             .SkipTo(new CodeInstruction[]
             {
@@ -77,7 +76,7 @@ namespace BetterBeehouses
             })
             .Skip()
             .Remove()
-            .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetSearchRange")))
+            .Add(new CodeInstruction(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(GetSearchRange))))
             .SkipTo(new CodeInstruction[]
             {
                 new(OpCodes.Ldstr," Honey")
@@ -85,16 +84,16 @@ namespace BetterBeehouses
             .SkipTo(new CodeInstruction[]
             {
                 new(OpCodes.Ldc_I4_0),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Split", new System.Type[]{typeof(char),typeof(System.StringSplitOptions)})),
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Split", new[]{typeof(char),typeof(System.StringSplitOptions)})),
                 new(OpCodes.Ldc_I4_1),
                 new(OpCodes.Ldelem_Ref),
-                new(OpCodes.Call, typeof(System.Convert).MethodNamed("ToInt32", new System.Type[]{typeof(string)}))
+                new(OpCodes.Call, typeof(System.Convert).MethodNamed("ToInt32", new[]{typeof(string)}))
             })
             .Skip(2)
             .Add(new CodeInstruction[]
             {
                 new(OpCodes.Conv_R4),
-                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetMultiplier")),
+                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(GetMultiplier))),
                 new(OpCodes.Mul),
                 new(OpCodes.Conv_I4)
             })
@@ -103,37 +102,36 @@ namespace BetterBeehouses
                 new(OpCodes.Call,typeof(Game1).MethodNamed("get_currentLocation")),
                 new(OpCodes.Call,typeof(Game1).MethodNamed("GetSeasonForLocation")),
                 new(OpCodes.Ldstr, "winter"),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new[] { typeof(string) }))
             })
             .Add(new CodeInstruction[]
             {
                 new(OpCodes.Call,typeof(Game1).MethodNamed("get_currentLocation")),
-                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("CantProduceToday"))
+                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(CantProduceToday)))
             })
             .SkipTo(new CodeInstruction[]
             {
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, typeof(Object).MethodNamed("get_name")),
                 new(OpCodes.Ldstr, "Bee House"),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new[] { typeof(string) }))
             })
             .SkipTo(new CodeInstruction[] {
                 new(OpCodes.Ldstr, "winter"),
-                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new System.Type[]{typeof(string)}))
+                new(OpCodes.Callvirt, typeof(string).MethodNamed("Equals",new[] { typeof(string) }))
             })
             .Add(new CodeInstruction[]
             {
                 new(OpCodes.Ldarg_1),
-                new(OpCodes.Call, typeof(ObjectPatch).MethodNamed("CantProduceToday"))
+                new(OpCodes.Call, typeof(ObjectPatch).MethodNamed(nameof(CantProduceToday)))
             })
-            .SkipTo(new CodeInstruction[]
-            {
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, typeof(Object).FieldNamed("minutesUntilReady")),
-                new(OpCodes.Ldsfld, typeof(Game1).FieldNamed("timeOfDay"))
+            .SkipTo(new CodeInstruction[] {
+                new(OpCodes.Ldfld,typeof(Object).FieldNamed("minutesUntilReady")),
+                new(OpCodes.Ldsfld,typeof(Game1).FieldNamed("timeOfDay"))
             })
-            .Remove()
-            .Add(new CodeInstruction(OpCodes.Call, typeof(ObjectPatch).MethodNamed("GetProduceDays")))
+            .Transform(new CodeInstruction[]{
+                new(OpCodes.Call,typeof(Utility).MethodNamed("CalculateMinutesUntilMorning",new[]{typeof(int),typeof(int)}))
+            }, ChangeDays)
             .Finish();
 
         //---------
@@ -172,6 +170,15 @@ namespace BetterBeehouses
 
         //--------
 
+        internal static IEnumerable<CodeInstruction> ChangeDays(IList<CodeInstruction> codes)
+        {
+            var op = new CodeInstruction(OpCodes.Call, typeof(ObjectPatch).MethodNamed(nameof(GetProduceDays)));
+            op.labels.AddRange(codes[0].labels);
+            codes[0].labels.Clear();
+            yield return op;
+            foreach (var code in codes)
+                yield return code;
+        }
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
             return isWinter && !Utils.GetProduceHere(loc, ModEntry.config.ProduceInWinter);
@@ -180,13 +187,9 @@ namespace BetterBeehouses
         {
             return ModEntry.config.FlowerRange;
         }
-        public static int GetProduceTime(int timeOfDay)
+        public static int GetProduceDays(int original)
         {
-            return (ModEntry.config.DaysToProduce > 1) ? Utility.CalculateMinutesUntilMorning(timeOfDay, ModEntry.config.DaysToProduce - 1) : 1;
-        }
-        public static int GetProduceDays()
-        {
-            return ModEntry.config.DaysToProduce;
+            return System.Math.Max(original * ModEntry.config.DaysToProduce / 4, 1);
         }
         public static bool CanProduceHere(GameLocation loc)
         {
