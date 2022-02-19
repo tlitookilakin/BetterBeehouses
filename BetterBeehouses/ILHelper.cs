@@ -15,7 +15,7 @@ namespace BetterBeehouses
             get { return currentGenerator; }
         }
 
-        private enum ActionType { None, SkipTo, Add, AddF, Remove, RemoveTo, RemoveAt, RemoveL, Finish, Transform };
+        private enum ActionType { None, SkipTo, Add, AddF, Remove, RemoveTo, RemoveAt, RemoveL, Finish, Transform, InsertBefore };
         public delegate IEnumerable<CodeInstruction> Transformer(IList<CodeInstruction> instructions);
 
         private readonly List<(ActionType action, object arg)> actionQueue = new();
@@ -30,65 +30,120 @@ namespace BetterBeehouses
             name = Name;
             boxes = new();
         }
+        /// <summary>Skips ahead</summary>
+        /// <param name="count">Number of instructions to skip</param>
+        /// <returns>this</returns>
         public ILHelper Skip(int count = 1)
         {
             actionQueue.Add((ActionType.None, count));
             return this;
         }
+        /// <summary>Skips ahead, to after a set of marker instructions</summary>
+        /// <param name="markers">Marker Instructions</param>
+        /// <returns>this</returns>
         public ILHelper SkipTo(IList<CodeInstruction> markers)
         {
             actionQueue.Add((ActionType.SkipTo, markers));
             return this;
         }
+        /// <summary>Adds some instructions</summary>
+        /// <param name="codes">The instructions to add</param>
+        /// <returns>this</returns>
         public ILHelper Add(IList<CodeInstruction> codes)
         {
             actionQueue.Add((ActionType.Add, codes));
             return this;
         }
+        /// <summary>Adds an instruction</summary>
+        /// <param name="code">The instruction to add</param>
+        /// <returns>this</returns>
         public ILHelper Add(CodeInstruction code)
         {
             return Add(new CodeInstruction[] { code });
         }
+        /// <summary>Adds some dynamically-generated instructions</summary>
+        /// <param name="func">The instruction generator.</param>
+        /// <returns>this</returns>
         public ILHelper Add(Func<IList<LocalBuilder>, IEnumerable<CodeInstruction>> func)
         {
             actionQueue.Add((ActionType.AddF, func));
             return this;
         }
+        /// <summary>Removes some instructions</summary>
+        /// <param name="count">How many to remove</param>
+        /// <returns>this</returns>
         public ILHelper Remove(int count = 1)
         {
             actionQueue.Add((ActionType.Remove, count));
             return this;
         }
+        /// <summary>Removes some instructions</summary>
+        /// <param name="markers">A list of instructions to remove</param>
+        /// <returns>this</returns>
         public ILHelper Remove(IList<CodeInstruction> markers)
         {
             actionQueue.Add((ActionType.RemoveL, markers));
             return this;
         }
+        /// <summary>Remove up to, but not including, this set of instructions</summary>
+        /// <param name="markers">The marker instructions</param>
+        /// <returns>this</returns>
         public ILHelper RemoveTo(IList<CodeInstruction> markers)
         {
             actionQueue.Add((ActionType.RemoveTo, markers));
             return this;
         }
+        /// <summary>Removes up to, and including, this set of instructions</summary>
+        /// <param name="markers">The marker instructions</param>
+        /// <returns>this</returns>
         public ILHelper RemoveAt(IList<CodeInstruction> markers)
         {
             actionQueue.Add((ActionType.RemoveAt, markers));
             return this;
         }
+        /// <summary>Adds the rest of the original instructions as-is</summary>
+        /// <returns>this</returns>
         public ILHelper Finish()
         {
             actionQueue.Add((ActionType.Finish, null));
             return this;
         }
+        /// <summary>Allows dynamically replacing a set of instructions with new ones</summary>
+        /// <param name="markers">The marker instructions</param>
+        /// <param name="transformer">The method used to transform the markers into a new instruction set</param>
+        /// <returns>this</returns>
         public ILHelper Transform(IList<CodeInstruction> markers, Transformer transformer)
         {
             actionQueue.Add((ActionType.Transform, (markers, transformer)));
             return this;
         }
+        /// <summary>Inserts an instruction before the marker instructions</summary>
+        /// <param name="code">The instruction to insert</param>
+        /// <param name="markers">The marker instructions</param>
+        /// <returns>this</returns>
+        public ILHelper InsertBefore(CodeInstruction code, IList<CodeInstruction> markers)
+        {
+            return InsertBefore(new[] { code }, markers);
+        }
+        /// <summary>Inserts a set of instructions before the marker instructions</summary>
+        /// <param name="codes">The instructions to insert</param>
+        /// <param name="markers">The marker instructions</param>
+        /// <returns>this</returns>
+        public ILHelper InsertBefore(IList<CodeInstruction> codes, IList<CodeInstruction> markers)
+        {
+            actionQueue.Add((ActionType.InsertBefore, (codes, markers)));
+            return this;
+        }
+        /// <summary>Resets the helper to a default state. Clears all defined actions. Do not use while patching, ever.</summary>
         public void Reset()
         {
             actionQueue.Clear();
             boxes.Clear();
         }
+        /// <summary>Applies the patch to a given instruction set</summary>
+        /// <param name="Instructions">The original instruction set</param>
+        /// <param name="generator">the ILGenerator for this patch, if needed.</param>
+        /// <returns>The applied patch.</returns>
         public IEnumerable<CodeInstruction> Run(IEnumerable<CodeInstruction> Instructions, ILGenerator generator = null)
         {
             ModEntry.monitor.Log("Now applying patch '" + name + "'...", LogLevel.Debug);
@@ -149,6 +204,11 @@ namespace BetterBeehouses
                         foreach (var code in transform(markers, transformer))
                             yield return code;
                         break;
+                    case ActionType.InsertBefore:
+                        (var codes, var marker) = (ValueTuple<IList<CodeInstruction>, IList<CodeInstruction>>)item.arg;
+                        foreach (var code in insertBefore(codes, marker))
+                            yield return code;
+                        break;
                 }
 
                 if (hasErrored)
@@ -160,6 +220,40 @@ namespace BetterBeehouses
                 ModEntry.monitor.Log("Failed to correctly apply patch '" + name + "'! May cause problems!", LogLevel.Error);
             else
                 ModEntry.monitor.Log("Successfully applied patch '" + name + "'.", LogLevel.Debug);
+        }
+        private IEnumerable<CodeInstruction> insertBefore(IList<CodeInstruction> codes, IList<CodeInstruction> Anchors)
+        {
+            int marker = 0;
+            List<CodeInstruction> saved = new();
+            while (cursor.MoveNext())
+            {
+                var s = Anchors[marker];
+                var code = cursor.Current;
+                if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
+                {
+                    marker++;
+                    saved.Add(code);
+                }
+                else
+                {
+                    foreach (var item in saved)
+                        yield return item;
+                    yield return code;
+                    saved.Clear();
+                    marker = 0;
+                }
+                if(marker >= Anchors.Count)
+                {
+                    ModEntry.monitor.Log("Found markers for '" + name + "':" + actionIndex.ToString(), LogLevel.Trace);
+                    foreach (var item in codes)
+                        yield return item;
+                    foreach (var item in saved)
+                        yield return item;
+                    yield break;
+                }
+            }
+            hasErrored = true;
+            ModEntry.monitor.Log("Failed to apply patch component '" + name + "':" + actionIndex.ToString() + " ; Marker instructions not found!", LogLevel.Error);
         }
         private IEnumerable<CodeInstruction> transform(IList<CodeInstruction> Anchors, Transformer transformer)
         {
