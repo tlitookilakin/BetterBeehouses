@@ -224,22 +224,24 @@ namespace BetterBeehouses
         private IEnumerable<CodeInstruction> insertBefore(IList<CodeInstruction> codes, IList<CodeInstruction> Anchors)
         {
             int marker = 0;
-            List<CodeInstruction> saved = new();
+            var saved = new CodeInstruction[Anchors.Count];
             while (cursor.MoveNext())
             {
                 var s = Anchors[marker];
                 var code = cursor.Current;
                 if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
                 {
+                    saved[marker] = code;
                     marker++;
-                    saved.Add(code);
                 }
                 else
                 {
-                    foreach (var item in saved)
-                        yield return item;
+                    for(int i = 0; i < saved.Length; i++)
+                    {
+                        yield return saved[i];
+                        saved[i] = null;
+                    }
                     yield return code;
-                    saved.Clear();
                     marker = 0;
                 }
                 if(marker >= Anchors.Count)
@@ -258,22 +260,24 @@ namespace BetterBeehouses
         private IEnumerable<CodeInstruction> transform(IList<CodeInstruction> Anchors, Transformer transformer)
         {
             int marker = 0;
-            List<CodeInstruction> saved = new();
+            var saved = new CodeInstruction[Anchors.Count];
             while (cursor.MoveNext())
             {
                 var s = Anchors[marker];
                 var code = cursor.Current;
                 if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
                 {
+                    saved[marker] = code;
                     marker++;
-                    saved.Add(code);
                 }
                 else
                 {
-                    foreach (var item in saved)
-                        yield return item;
+                    for (int i = 0; i < saved.Length; i++)
+                    {
+                        yield return saved[i];
+                        saved[i] = null;
+                    }
                     yield return code;
-                    saved.Clear();
                     marker = 0;
                 }
                 if (marker >= Anchors.Count)
@@ -319,22 +323,21 @@ namespace BetterBeehouses
         private IEnumerable<CodeInstruction> removeTo(IList<CodeInstruction> Anchors)
         {
             int marker = 0;
-            List<CodeInstruction> saved = new();
+            var saved = new CodeInstruction[Anchors.Count];
             while (cursor.MoveNext())
             {
                 var s = Anchors[marker];
                 var code = cursor.Current;
                 if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
                 {
+                    saved[marker] = code;
                     marker++;
-                    saved.Add(code);
                     if (code.operand is LocalBuilder b)
                         boxes.Add(b);
                 }
                 else
                 {
                     boxes.Clear();
-                    saved.Clear();
                     marker = 0;
                 }
                 if (marker >= Anchors.Count)
@@ -380,15 +383,15 @@ namespace BetterBeehouses
         private IEnumerable<CodeInstruction> removeChunk(IList<CodeInstruction> Anchors)
         {
             int marker = 0;
-            List<CodeInstruction> saved = new();
+            var saved = new CodeInstruction[Anchors.Count];
             while (cursor.MoveNext())
             {
                 var s = Anchors[marker];
                 var code = cursor.Current;
                 if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
                 {
+                    saved[marker] = code;
                     marker++;
-                    saved.Add(code);
                     if (code.operand is LocalBuilder b)
                         boxes.Add(b);
                 }
@@ -396,9 +399,11 @@ namespace BetterBeehouses
                 {
                     boxes.Clear();
                     marker = 0;
-                    foreach (var inst in saved)
-                        yield return inst;
-                    saved.Clear();
+                    for (int i = 0; i < saved.Length; i++)
+                    {
+                        yield return saved[i];
+                        saved[i] = null;
+                    }
                     yield return code;
                 }
                 if (marker >= Anchors.Count)
