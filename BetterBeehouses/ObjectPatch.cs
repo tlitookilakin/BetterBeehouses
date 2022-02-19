@@ -140,32 +140,28 @@ namespace BetterBeehouses
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> minutesElapsed(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in minutesElapsedPatch.Run(instructions))
-                yield return code;
+            return minutesElapsedPatch.Run(instructions);
         }
 
         [HarmonyPatch("DayUpdate")]
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DayUpdate(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in dayUpdatePatch.Run(instructions))
-                yield return code;
+            return dayUpdatePatch.Run(instructions);
         }
 
         [HarmonyPatch("performDropDownAction")]
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> DropDown(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in dropDownPatch.Run(instructions))
-                yield return code;
+            return dropDownPatch.Run(instructions);
         }
 
         [HarmonyPatch("checkForAction")]
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> checkForAction(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in checkForActionPatch.Run(instructions))
-                yield return code;
+            return checkForActionPatch.Run(instructions);
         }
 
         //--------

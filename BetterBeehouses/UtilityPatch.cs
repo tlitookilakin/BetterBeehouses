@@ -30,8 +30,7 @@ namespace BetterBeehouses
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> findCloseFlower(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            foreach (var code in flowerPatch.Run(instructions, generator))
-                yield return code;
+            return flowerPatch.Run(instructions, generator);
         }
         private static IEnumerable<CodeInstruction> AddCheck(IList<CodeInstruction> codes)
         {

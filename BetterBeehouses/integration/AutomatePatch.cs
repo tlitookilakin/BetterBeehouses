@@ -32,18 +32,15 @@ namespace BetterBeehouses.integration
 
         public static IEnumerable<CodeInstruction> PatchState(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in getStatePatch.Run(instructions))
-                yield return code;
+            return getStatePatch.Run(instructions);
         }
         public static IEnumerable<CodeInstruction> PatchOutput(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in getOutputPatch.Run(instructions))
-                yield return code;
+            return getOutputPatch.Run(instructions);
         }
         public static IEnumerable<CodeInstruction> PatchReset(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (var code in resetPatch.Run(instructions))
-                yield return code;
+            return resetPatch.Run(instructions);
         }
 
         private static ILHelper statePatch()
