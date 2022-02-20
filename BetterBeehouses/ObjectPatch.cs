@@ -145,6 +145,7 @@ namespace BetterBeehouses
 
         [HarmonyPatch("DayUpdate")]
         [HarmonyTranspiler]
+        [HarmonyPriority(Priority.Last)]
         internal static IEnumerable<CodeInstruction> DayUpdate(IEnumerable<CodeInstruction> instructions)
         {
             return dayUpdatePatch.Run(instructions);
@@ -152,6 +153,7 @@ namespace BetterBeehouses
 
         [HarmonyPatch("performDropDownAction")]
         [HarmonyTranspiler]
+        [HarmonyPriority(Priority.Last)]
         internal static IEnumerable<CodeInstruction> DropDown(IEnumerable<CodeInstruction> instructions)
         {
             return dropDownPatch.Run(instructions);
@@ -159,6 +161,7 @@ namespace BetterBeehouses
 
         [HarmonyPatch("checkForAction")]
         [HarmonyTranspiler]
+        [HarmonyPriority(Priority.Last)]
         internal static IEnumerable<CodeInstruction> checkForAction(IEnumerable<CodeInstruction> instructions)
         {
             return checkForActionPatch.Run(instructions);
