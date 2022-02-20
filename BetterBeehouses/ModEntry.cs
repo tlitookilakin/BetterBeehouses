@@ -29,15 +29,15 @@ namespace BetterBeehouses
             config = helper.ReadConfig<Config>();
             api = new();
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            harmony.PatchAll();
         }
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {
-            config.RegisterModConfigMenu(ModManifest);
+            harmony.PatchAll();
             bool modPatched = PFMPatch.setup();
             modPatched = AutomatePatch.Setup() || modPatched;
             if (modPatched)
                 monitor.Log(helper.Translation.Get("general.patchedModsWarning"),LogLevel.Warn);
+            config.RegisterModConfigMenu(ModManifest);
         }
         public override object GetApi()
         {
