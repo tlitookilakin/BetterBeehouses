@@ -8,7 +8,7 @@ using System;
 
 namespace BetterBeehouses
 {
-    public class ModEntry : Mod
+    public class ModEntry : Mod, IAssetEditor, IAssetLoader
     {
         internal ITranslationHelper i18n => Helper.Translation;
         internal static IMonitor monitor;
@@ -42,6 +42,22 @@ namespace BetterBeehouses
         public override object GetApi()
         {
             return api;
+        }
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            return asset.AssetNameEquals("Mods/aedenthorn.ParticleEffects/dict") && config.Particles;
+        }
+        public void Edit<T>(IAssetData asset)
+        {
+            Utils.AddDictionaryEntry<T>(asset, "tlitookilakin.BetterBeehouses.Bees", "beeParticle.json");
+        }
+        public bool CanLoad<T>(IAssetInfo asset)
+        {
+            return asset.AssetNameEquals("Mods/BetterBeehouses/Bees");
+        }
+        public T Load<T>(IAssetInfo asset)
+        {
+            return helper.Content.Load<T>("assets/bees.png");
         }
     }
 }

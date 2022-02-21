@@ -14,6 +14,7 @@ namespace BetterBeehouses
         public int FlowerRange { get; set; }
         public bool UseForageFlowers { get; set; }
         public float ValueMultiplier { get; set; }
+        public bool Particles { get; set; }
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -26,6 +27,13 @@ namespace BetterBeehouses
             FlowerRange = 5;
             ValueMultiplier = 1f;
             UseForageFlowers = false;
+            Particles = true;
+        }
+
+        public void ApplyConfig()
+        {
+            ModEntry.helper.WriteConfig(this);
+            ModEntry.helper.Content.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -35,7 +43,7 @@ namespace BetterBeehouses
 
             var api = ModEntry.helper.ModRegistry.GetApi<integration.IGMCMAPI>("spacechase0.GenericModConfigMenu");
 
-            api.Register(manifest, ResetToDefault, () => ModEntry.helper.WriteConfig(this));
+            api.Register(manifest, ResetToDefault, ApplyConfig);
 
             api.AddSectionTitle(manifest, () => i18n.Get("config.title"));
             api.AddNumberOption(manifest,
@@ -88,6 +96,12 @@ namespace BetterBeehouses
                 (b) => UseForageFlowers = b,
                 () => i18n.Get("config.useForage.name"),
                 () => i18n.Get("config.useForage.desc")
+            );
+            api.AddBoolOption(manifest,
+                () => Particles,
+                (b) => Particles = b,
+                () => i18n.Get("config.particles.name"),
+                () => i18n.Get("config.particles.desc")
             );
         }
         public string TranslatedOption(string enumName, string value)

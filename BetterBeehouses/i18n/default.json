@@ -19,6 +19,8 @@
   "config.valueMultiplier.desc": "Honey produced by bee houses is multiplied by this",
   "config.useForage.name": "Use Forage Flowers",
   "config.useForage.desc": "If bee houses should detect forage flowers",
+  "config.particles.name": "Bee Particles",
+  "config.particles.desc": "Show cosmetic bee swarms around bee houses. (Requires Particles Effects mod.)",
   "config.usableOptions.Outdoors": "Outdoors",
   "config.usableOptions.Greenhouse": "Outdoors & Greenhouse",
   "config.usableOptions.Anywhere": "Anywhere",
