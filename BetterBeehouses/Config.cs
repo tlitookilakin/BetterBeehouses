@@ -15,6 +15,7 @@ namespace BetterBeehouses
         public bool UseForageFlowers { get; set; }
         public float ValueMultiplier { get; set; }
         public bool Particles { get; set; }
+        public bool UseQuality { get; set; }
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -28,6 +29,7 @@ namespace BetterBeehouses
             ValueMultiplier = 1f;
             UseForageFlowers = false;
             Particles = true;
+            UseQuality = false;
         }
 
         public void ApplyConfig()
@@ -97,7 +99,13 @@ namespace BetterBeehouses
                 () => i18n.Get("config.useForage.name"),
                 () => i18n.Get("config.useForage.desc")
             );
-            if(ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
+            api.AddBoolOption(manifest,
+                () => UseQuality,
+                (b) => UseQuality = b,
+                () => i18n.Get("config.useQuality.name"),
+                () => i18n.Get("config.useQuality.desc")
+            );
+            if (ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
                 api.AddBoolOption(manifest,
                     () => Particles,
                     (b) => Particles = b,

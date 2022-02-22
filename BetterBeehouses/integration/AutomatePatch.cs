@@ -70,6 +70,7 @@ namespace BetterBeehouses.integration
                 .Skip(2)
                 .Add(new CodeInstruction[] {
                     new(OpCodes.Conv_R4),
+                    new(OpCodes.Ldc_I4_0),
                     new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetMultiplier")),
                     new(OpCodes.Mul),
                     new(OpCodes.Conv_I4)

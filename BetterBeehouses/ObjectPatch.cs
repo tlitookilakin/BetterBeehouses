@@ -89,13 +89,17 @@ namespace BetterBeehouses
                 new(OpCodes.Ldelem_Ref),
                 new(OpCodes.Call, typeof(System.Convert).MethodNamed("ToInt32", new[]{typeof(string)}))
             })
-            .Skip(2)
+            .SkipTo(new CodeInstruction[]
+            {
+                new(OpCodes.Callvirt, typeof(Object).MethodNamed("set_Price"))
+            })
             .Add(new CodeInstruction[]
             {
-                new(OpCodes.Conv_R4),
-                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(GetMultiplier))),
-                new(OpCodes.Mul),
-                new(OpCodes.Conv_I4)
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld,typeof(Object).FieldNamed("heldObject")),
+                new(OpCodes.Callvirt,typeof(NetRef<Object>).MethodNamed("get_Value")),
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(ManipulateObject)))
             })
             .SkipTo(new CodeInstruction[]
             {
@@ -178,6 +182,11 @@ namespace BetterBeehouses
             foreach (var code in codes)
                 yield return code;
         }
+        public static void ManipulateObject(Object obj, Farmer who = null)
+        {
+            obj.Quality = GetQuality(who);
+            obj.Price = (int)(obj.Price * GetMultiplier(obj.Quality));
+        }
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
             return isWinter && !Utils.GetProduceHere(loc, ModEntry.config.ProduceInWinter);
@@ -195,9 +204,21 @@ namespace BetterBeehouses
             var where = ModEntry.config.UsableIn;
             return where is Config.UsableOptions.Anywhere || loc.IsOutdoors || loc.isGreenhouse && where is not Config.UsableOptions.Outdoors;
         }
-        public static float GetMultiplier()
+        public static float GetMultiplier(int quality)
         {
-            return ModEntry.config.ValueMultiplier;
-        } 
+            return (1f + .25f * quality) * ModEntry.config.ValueMultiplier;
+        }
+        public static int GetQuality(Farmer who)
+        {
+
+            if (!ModEntry.config.UseQuality)
+                return 0;
+
+            double chanceForGoldQuality = 0.2 * (who.FarmingLevel / 10.0) + 0.2 * ((who.FarmingLevel + 2.0) / 12.0) + 0.01;
+            double chanceForSilverQuality = System.Math.Min(0.75, chanceForGoldQuality * 2.0);
+            return (Game1.random.NextDouble() < chanceForGoldQuality / 2.0) ? 4 :
+                (Game1.random.NextDouble() < chanceForGoldQuality) ? 2 :
+                (Game1.random.NextDouble() < chanceForSilverQuality) ? 1 : 0;
+        }
     }
 }
