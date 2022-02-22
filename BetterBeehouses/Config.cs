@@ -97,12 +97,13 @@ namespace BetterBeehouses
                 () => i18n.Get("config.useForage.name"),
                 () => i18n.Get("config.useForage.desc")
             );
-            api.AddBoolOption(manifest,
-                () => Particles,
-                (b) => Particles = b,
-                () => i18n.Get("config.particles.name"),
-                () => i18n.Get("config.particles.desc")
-            );
+            if(ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
+                api.AddBoolOption(manifest,
+                    () => Particles,
+                    (b) => Particles = b,
+                    () => i18n.Get("config.particles.name"),
+                    () => i18n.Get("config.particles.desc")
+                );
         }
         public string TranslatedOption(string enumName, string value)
         {
