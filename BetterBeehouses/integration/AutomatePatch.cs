@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using System.Collections.Generic;
@@ -67,13 +68,16 @@ namespace BetterBeehouses.integration
                     new(OpCodes.Ldloc_0),
                     new(OpCodes.Callvirt,typeof(Object).MethodNamed("get_Price"))
                 })
-                .Skip(2)
-                .Add(new CodeInstruction[] {
-                    new(OpCodes.Conv_R4),
-                    new(OpCodes.Ldc_I4_0),
-                    new(OpCodes.Call,typeof(ObjectPatch).MethodNamed("GetMultiplier")),
-                    new(OpCodes.Mul),
-                    new(OpCodes.Conv_I4)
+                .SkipTo(new CodeInstruction[]
+                {
+                    new(OpCodes.Callvirt, typeof(Object).MethodNamed("set_Price"))
+                })
+                .Add(new CodeInstruction[]
+                {
+                    new(OpCodes.Dup),
+                    new(OpCodes.Ldarg_0),
+                    new(OpCodes.Call,AccessTools.TypeByName("Pathoschild.Stardew.Automate.Framework.Machines.Objects.BeeHouseMachine").MethodNamed("GetOwner")),
+                    new(OpCodes.Call,typeof(ObjectPatch).MethodNamed(nameof(ObjectPatch.ManipulateObject)))
                 })
                 .Finish();
         }

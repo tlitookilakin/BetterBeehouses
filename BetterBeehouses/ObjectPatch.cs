@@ -186,6 +186,8 @@ namespace BetterBeehouses
         {
             obj.Quality = GetQuality(who);
             obj.Price = (int)(obj.Price * GetMultiplier(obj.Quality));
+            ModEntry.monitor.Log(GetQuality(who).ToString());
+            ModEntry.monitor.Log(obj.name);
         }
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
@@ -210,7 +212,6 @@ namespace BetterBeehouses
         }
         public static int GetQuality(Farmer who)
         {
-
             if (!ModEntry.config.UseQuality)
                 return 0;
 
