@@ -186,8 +186,6 @@ namespace BetterBeehouses
         {
             obj.Quality = GetQuality(who);
             obj.Price = (int)(obj.Price * GetMultiplier(obj.Quality));
-            ModEntry.monitor.Log(GetQuality(who).ToString());
-            ModEntry.monitor.Log(obj.name);
         }
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {
@@ -204,7 +202,7 @@ namespace BetterBeehouses
         public static bool CanProduceHere(GameLocation loc)
         {
             var where = ModEntry.config.UsableIn;
-            return where is Config.UsableOptions.Anywhere || loc.IsOutdoors || loc.isGreenhouse && where is not Config.UsableOptions.Outdoors;
+            return where is Config.UsableOptions.Anywhere || loc.IsOutdoors || loc.isGreenhouse.Value && where is not Config.UsableOptions.Outdoors;
         }
         public static float GetMultiplier(int quality)
         {

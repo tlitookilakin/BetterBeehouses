@@ -32,12 +32,12 @@ namespace BetterBeehouses
         }
         public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
         {
-            return where is not Config.ProduceWhere.Never && (!loc.isOutdoors || where is Config.ProduceWhere.Always);
+            return where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
         }
         public static Crop CropFromObj(StardewValley.Object obj)
         {
             Crop ret = new();
-            ret.indexOfHarvest.Value = obj.parentSheetIndex;
+            ret.indexOfHarvest.Value = obj.ParentSheetIndex;
             return ret;
         }
         public static void AddDictionaryEntry<T>(IAssetData asset, object key, string path)

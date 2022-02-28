@@ -7,15 +7,15 @@ namespace BetterBeehouses
     {
         internal enum UsableOptions { Outdoors, Greenhouse, Anywhere }
         internal enum ProduceWhere { Never, Indoors, Always }
-        public ProduceWhere ProduceInWinter { get; set; }
-        public ProduceWhere UsePottedFlowers { get; set; }
-        public UsableOptions UsableIn { get; set; }
-        public int DaysToProduce { get; set; }
-        public int FlowerRange { get; set; }
-        public bool UseForageFlowers { get; set; }
-        public float ValueMultiplier { get; set; }
-        public bool Particles { get; set; }
-        public bool UseQuality { get; set; }
+        public ProduceWhere ProduceInWinter { get; set; } = ProduceWhere.Indoors;
+        public ProduceWhere UsePottedFlowers { get; set; } = ProduceWhere.Always;
+        public UsableOptions UsableIn { get; set; } = UsableOptions.Greenhouse;
+        public int DaysToProduce { get; set; } = 4;
+        public int FlowerRange { get; set; } = 5;
+        public bool UseForageFlowers { get; set; } = false;
+        public float ValueMultiplier { get; set; } = 1f;
+        public bool Particles { get; set; } = true;
+        public bool UseQuality { get; set; } = false;
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
