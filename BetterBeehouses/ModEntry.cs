@@ -32,11 +32,10 @@ namespace BetterBeehouses
         }
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {
+            monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
             harmony.PatchAll();
-            bool modPatched = PFMPatch.setup();
-            modPatched = AutomatePatch.Setup() || modPatched;
-            if (modPatched)
-                monitor.Log(helper.Translation.Get("general.patchedModsWarning"),LogLevel.Warn);
+            PFMPatch.setup();
+            AutomatePatch.Setup();
             config.RegisterModConfigMenu(ModManifest);
         }
         public override object GetApi()
