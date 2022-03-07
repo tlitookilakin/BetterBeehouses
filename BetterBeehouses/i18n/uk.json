@@ -16,7 +16,7 @@
   "config.valueMultiplier.name": "Множник ціни меду",
   "config.valueMultiplier.desc": "Мед, виготовлений бджолами помножується у стільки разів",
   "config.useForage.name": "Використовувати дикі квіти",
-  "config.useForage.desc": "Чи варто бдожалам з вуликів шукати дикі квіти",
+  "config.useForage.desc": "Чи варто бджолам з вуликів шукати дикі квіти",
   "config.particles.name": "Бджолині частинки",
   "config.particles.desc": "Показує декоративні бджолині рої навколо вуликів",
   "config.useQuality.name": "Якість меду",
