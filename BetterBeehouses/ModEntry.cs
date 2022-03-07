@@ -34,7 +34,7 @@ namespace BetterBeehouses
         {
             monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
             harmony.PatchAll();
-            PFMPatch.setup();
+            PFMPatch.Setup();
             AutomatePatch.Setup();
             config.RegisterModConfigMenu(ModManifest);
         }

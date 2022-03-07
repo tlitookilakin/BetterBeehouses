@@ -16,6 +16,8 @@ namespace BetterBeehouses
         public float ValueMultiplier { get; set; } = 1f;
         public bool Particles { get; set; } = true;
         public bool UseQuality { get; set; } = false;
+        public bool PatchAutomate { get; set; } = true;
+        public bool PatchPFM { get; set; } = true;
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -30,12 +32,16 @@ namespace BetterBeehouses
             UseForageFlowers = false;
             Particles = true;
             UseQuality = false;
+            PatchAutomate = true;
+            PatchPFM = true;
         }
 
         public void ApplyConfig()
         {
             ModEntry.helper.WriteConfig(this);
             ModEntry.helper.Content.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
+            integration.AutomatePatch.Setup();
+            integration.PFMPatch.Setup();
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -112,6 +118,18 @@ namespace BetterBeehouses
                     () => i18n.Get("config.particles.name"),
                     () => i18n.Get("config.particles.desc")
                 );
+            api.AddBoolOption(manifest,
+                () => PatchAutomate,
+                (b) => PatchAutomate = b,
+                () => i18n.Get("config.patchAutomate.name"),
+                () => i18n.Get("config.patchAutomate.desc")
+            );
+            api.AddBoolOption(manifest,
+                () => PatchPFM,
+                (b) => PatchPFM = b,
+                () => i18n.Get("config.patchPFM.name"),
+                () => i18n.Get("config.patchPFM.desc")
+            );
         }
         public string TranslatedOption(string enumName, string value)
         {
