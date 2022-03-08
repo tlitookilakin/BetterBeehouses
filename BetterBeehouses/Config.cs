@@ -25,6 +25,12 @@ namespace BetterBeehouses
             get { return capCurve; }
             set { capCurve = Math.Clamp(value, 0f, 1f); }
         }
+        private float bearBoost = 1f;
+        public float BearBoost
+        {
+            get { return bearBoost; }
+            set { bearBoost = Math.Clamp(value, 1f, 3f); }
+        }
 
         private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -43,6 +49,7 @@ namespace BetterBeehouses
             PatchPFM = true;
             CapFactor = 700;
             CapCurve = 0f;
+            BearBoost = 1f;
         }
 
         public void ApplyConfig()
@@ -111,6 +118,13 @@ namespace BetterBeehouses
                 (b) => UseQuality = b,
                 () => i18n.Get("config.useQuality.name"),
                 () => i18n.Get("config.useQuality.desc")
+            );
+            api.AddNumberOption(manifest,
+                () => BearBoost,
+                (n) => BearBoost = n,
+                () => i18n.Get("config.bearBoost.name"),
+                () => i18n.Get("config.bearBoost.desc"),
+                1f, 3f, .05f
             );
             api.AddPageLink(manifest, "price", () => i18n.Get("config.price.name"), () => i18n.Get("config.price.desc"));
             api.AddPageLink(manifest, "integration", () => i18n.Get("config.integration.name"), () => i18n.Get("config.integration.desc"));

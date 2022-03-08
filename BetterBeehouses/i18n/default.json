@@ -31,6 +31,8 @@
   "config.capFactor.desc": "The point at which honey value gets diminishing returns",
   "config.capCurve.name": "Cap Factor",
   "config.capCurve.desc": "The rate at which the price should be reduced after the cap",
+  "config.bearBoost.name": "Bear Quality Boost",
+  "config.bearBoost.desc": "Quality boost factor from Bear's Knowledge. Set to 1 to disable. Only applies when quality is enabled'",
   "config.integration.name": "Integration",
   "config.integration.desc": "Configure integration with other mods",
   "config.price.name": "Price",
