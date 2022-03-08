@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Netcode;
 using StardewValley;
+using MathF = System.MathF;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -185,7 +186,14 @@ namespace BetterBeehouses
         public static void ManipulateObject(Object obj, Farmer who = null)
         {
             obj.Quality = GetQuality(who);
-            obj.Price = (int)(obj.Price * GetMultiplier(obj.Quality));
+            float val = obj.Price * GetMultiplier(obj.Quality);
+            int cap = ModEntry.config.CapFactor;
+            if(val > cap)
+                val = cap * MathF.Pow(
+                    val / cap,
+                    1f / (1f + ModEntry.config.CapCurve)
+                );
+            obj.Price = (int)(val + .5f);
         }
         public static bool CantProduceToday(bool isWinter, GameLocation loc)
         {

@@ -33,6 +33,10 @@ namespace BetterBeehouses
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {
             monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
+            if (helper.ModRegistry.IsLoaded("Pathoschild.Automate") && !config.PatchAutomate)
+                monitor.Log(i18n.Get("general.automatePatchDisabled"), LogLevel.Info);
+            if (helper.ModRegistry.IsLoaded("Digus.ProducerFrameworkMod") && !config.PatchPFM)
+                monitor.Log(i18n.Get("general.pfmPatchDisabled"), LogLevel.Info);
             harmony.PatchAll();
             PFMPatch.Setup();
             AutomatePatch.Setup();
