@@ -265,7 +265,7 @@ namespace BetterBeehouses
             {
                 var s = Anchors[marker];
                 var code = cursor.Current;
-                if (code.opcode == s.opcode && CompareOperands(code.operand, s.operand))
+                if (s is null || (code.opcode == s.opcode && CompareOperands(code.operand, s.operand)))
                 {
                     saved[marker] = code;
                     marker++;

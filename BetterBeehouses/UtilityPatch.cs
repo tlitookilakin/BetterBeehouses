@@ -28,7 +28,8 @@ namespace BetterBeehouses
             {
                 new(OpCodes.Call, typeof(Item).MethodNamed("get_Category")),
                 new(OpCodes.Ldc_I4_S, -80),
-                new(OpCodes.Bne_Un)
+                new(OpCodes.Bne_Un),
+                null
             }, AddContextTag)
             .Finish();
 
@@ -55,14 +56,15 @@ namespace BetterBeehouses
         }
         private static IEnumerable<CodeInstruction> AddContextTag(IList<CodeInstruction> codes)
         {
-            var jump = codes[2].operand;
+            var jump = flowerPatch.Generator.DefineLabel();
             var label = flowerPatch.Generator.DefineLabel();
             codes[0].labels.Add(label);
+            codes[3].labels.Add(jump);
 
             yield return new(OpCodes.Dup);
             yield return new(OpCodes.Ldstr, "honey_source");
             yield return new(OpCodes.Call, typeof(StardewValley.Object).MethodNamed("HasContextTag"));
-            yield return new(OpCodes.Brtrue, label);
+            yield return new(OpCodes.Brfalse, label);
             yield return new(OpCodes.Pop);
             yield return new(OpCodes.Br, jump);
             foreach (var code in codes)
@@ -81,6 +83,8 @@ namespace BetterBeehouses
                             return Utils.CropFromObj(ho);
                     }
                     Crop crop = pot.hoeDirt.Value?.crop;
+                    if (crop is null)
+                        return null;
                     var co = new StardewValley.Object(crop.indexOfHarvest.Value, 1);
                     return Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers) && IsGrown(crop, extraCheck) && (co.Category == -80 || co.HasContextTag("honey_source")) ?
                         crop : null; //flower in pot
