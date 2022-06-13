@@ -55,7 +55,7 @@ namespace BetterBeehouses
         public void ApplyConfig()
         {
             ModEntry.helper.WriteConfig(this);
-            ModEntry.helper.Content.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
+            ModEntry.helper.GameContent.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
             integration.AutomatePatch.Setup();
             integration.PFMPatch.Setup();
         }
