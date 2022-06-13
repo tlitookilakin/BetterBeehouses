@@ -30,7 +30,7 @@ namespace BetterBeehouses.integration
 
             return true;
         }
-        private static bool Prefix(object[] __args, ref bool __result)
-            => !(__result = ((StardewValley.Object)__args[0]).Name == "Bee House");
+        private static bool Prefix(StardewValley.Object __0, ref bool __result)
+            => !(__result = __0.Name == "Bee House");
     }
 }
