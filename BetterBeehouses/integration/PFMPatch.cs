@@ -21,7 +21,7 @@ namespace BetterBeehouses.integration
                 for(int i = 0; i < patchesToPatch.Length; i++)
                     ModEntry.harmony.Patch(type.MethodNamed(patchesToPatch[i]), prefix: new(typeof(PFMPatch), nameof(Prefix)));
                 isPatched = true;
-            } else if(isPatched && !ModEntry.config.PatchPFM)
+            } else
             {
                 for(int i = 0; i < patchesToPatch.Length; i++)
                     ModEntry.harmony.Unpatch(type.MethodNamed(patchesToPatch[i]), HarmonyPatchType.Prefix, ModEntry.ModID);

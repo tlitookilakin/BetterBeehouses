@@ -40,18 +40,19 @@ namespace BetterBeehouses
             ret.indexOfHarvest.Value = obj.ParentSheetIndex;
             return ret;
         }
-        public static void AddDictionaryEntry<T>(IAssetData asset, object key, string path)
+        public static void AddDictionaryEntry(IAssetData asset, object key, string path)
         {
-            if (!typeof(T).IsGenericType || typeof(T).GetGenericTypeDefinition() != typeof(Dictionary<,>))
+            Type T = asset.DataType;
+            if (!T.IsGenericType || T.GetGenericTypeDefinition() != typeof(Dictionary<,>))
                 return;
 
-            Type[] types = typeof(T).GetGenericArguments();
+            Type[] types = T.GetGenericArguments();
             addItemMethod.MakeGenericMethod(types).Invoke(null, new object[] {asset, key, path});
         }
         public static void AddItem<k, v>(IAssetData asset, k key, string path)
         {
             var model = asset.AsDictionary<k, v>().Data;
-            var entry = ModEntry.helper.Content.Load<v>($"assets/{path}");
+            var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
             model.Add(key, entry);
         }
     }
