@@ -2,9 +2,6 @@
 using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterBeehouses.integration
 {
@@ -18,13 +15,21 @@ namespace BetterBeehouses.integration
             if (!ModEntry.helper.ModRegistry.IsLoaded("Digus.PFMAutomate"))
                 return false;
 
+            ModEntry.monitor.Log($"PFMAutomate integration {(isPatched ? "Disabling" : "Enabling")}.", LogLevel.Trace);
+
             vanillaMachines ??= ModEntry.helper.Reflection.GetField<HashSet<string>>(
-                AccessTools.TypeByName("Digus.PFMAutomate.AutomateOverrides"), "SupportedVanillaMachines");
+                AccessTools.TypeByName("PFMAutomate.AutomateOverrides"), "SupportedVanillaMachines");
 
             if (!isPatched && ModEntry.config.PatchPFM && ModEntry.config.PatchAutomate)
+            {
                 vanillaMachines.GetValue().Remove(beehouseMachineName);
+                isPatched = true;
+            }
             else
+            {
                 vanillaMachines.GetValue().Add(beehouseMachineName);
+                isPatched = false;
+            }
 
             return true;
         }

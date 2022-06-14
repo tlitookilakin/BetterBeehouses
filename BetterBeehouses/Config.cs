@@ -58,6 +58,7 @@ namespace BetterBeehouses
             ModEntry.helper.GameContent.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
             integration.AutomatePatch.Setup();
             integration.PFMPatch.Setup();
+            integration.PFMAutomatePatch.Setup();
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -176,9 +177,7 @@ namespace BetterBeehouses
             );
         }
         public string TranslatedOption(string enumName, string value)
-        {
-            return i18n.Get("config." + enumName + "." + value);
-        }
+            => i18n.Get($"config.{enumName}.{value}");
         public Config()
         {
             ResetToDefault();
