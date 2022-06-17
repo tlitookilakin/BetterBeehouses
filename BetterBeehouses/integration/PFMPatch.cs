@@ -31,6 +31,6 @@ namespace BetterBeehouses.integration
             return true;
         }
         private static bool Prefix(StardewValley.Object __0, ref bool __result)
-            => !(__result = __0.Name == "Bee House");
+            => !(__result = __0.Name.Normalize() == "beehouse");
     }
 }

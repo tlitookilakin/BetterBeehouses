@@ -11,6 +11,18 @@
     {
       "UniqueID": "DaLion.ImmersiveProfessions",
       "IsRequired": false
+    },
+    {
+        "UniqueID": "Digus.ProducerFrameworkMod",
+        "IsRequired": false
+    },
+    {
+        "UniqueID": "Digus.PFMAutomate",
+        "IsRequired": false
+    },
+    {
+        "UniqueID": "Pathoschild.Automate",
+        "IsRequired": false
     }
   ]
 }

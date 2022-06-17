@@ -9,7 +9,6 @@ namespace BetterBeehouses.integration
     {
         private static bool isPatched = false;
         private const string beehouseMachineName = "Pathoschild.Stardew.Automate.Framework.Machines.Objects.BeeHouseMachine";
-        private static IReflectedField<HashSet<string>> vanillaMachines = null;
         internal static bool Setup()
         {
             if (!ModEntry.helper.ModRegistry.IsLoaded("Digus.PFMAutomate"))
@@ -17,21 +16,22 @@ namespace BetterBeehouses.integration
 
             ModEntry.monitor.Log($"PFMAutomate integration {(isPatched ? "Disabling" : "Enabling")}.", LogLevel.Trace);
 
-            vanillaMachines ??= ModEntry.helper.Reflection.GetField<HashSet<string>>(
-                AccessTools.TypeByName("PFMAutomate.AutomateOverrides"), "SupportedVanillaMachines");
+            var target = AccessTools.TypeByName("PFMAutomate.AutomateOverrides").MethodNamed("GetFor");
 
             if (!isPatched && ModEntry.config.PatchPFM && ModEntry.config.PatchAutomate)
             {
-                vanillaMachines.GetValue().Remove(beehouseMachineName);
+                ModEntry.harmony.Patch(target, prefix: new(typeof(PFMAutomatePatch),nameof(Prefix)));
                 isPatched = true;
             }
             else
             {
-                vanillaMachines.GetValue().Add(beehouseMachineName);
+                ModEntry.harmony.Unpatch(target, HarmonyPatchType.Prefix, ModEntry.ModID);
                 isPatched = false;
             }
 
             return true;
         }
+        internal static bool Prefix(ref object __0)
+            => __0?.GetType().FullName == beehouseMachineName;
     }
 }

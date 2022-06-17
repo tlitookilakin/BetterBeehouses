@@ -55,5 +55,33 @@ namespace BetterBeehouses
             var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
             model.Add(key, entry);
         }
+        public static string Normalize(this string str)
+        {
+            var s = str.AsSpan();
+            var r = new Span<char>(new char[s.Length]);
+            int len = 0;
+            int last = 0;
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (!char.IsWhiteSpace(s[i]))
+                    continue;
+
+                if (i - last <= 0)
+                {
+                    last = i;
+                    continue;
+                }
+
+                s[last..i].CopyTo(r[len..]);
+                len += last - i;
+                last = i + 1;
+            }
+            if (last < s.Length)
+            {
+                s[last..s.Length].CopyTo(r[len..]);
+                len += s.Length - last;
+            }
+            return new string(r[..len]).ToLowerInvariant();
+        }
     }
 }
