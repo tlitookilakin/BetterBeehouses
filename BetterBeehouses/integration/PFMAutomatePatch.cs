@@ -32,6 +32,6 @@ namespace BetterBeehouses.integration
             return true;
         }
         internal static bool Prefix(ref object __0)
-            => __0?.GetType().FullName == beehouseMachineName;
+            => __0?.GetType().FullName != beehouseMachineName;
     }
 }
