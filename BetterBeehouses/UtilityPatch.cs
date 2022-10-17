@@ -39,14 +39,14 @@ namespace BetterBeehouses
 
 			Queue<Vector2> openList = new();
 			HashSet<Vector2> closedList = new();
-			openList.Enqueue(tile);
+			foreach(var vec in Utility.getAdjacentTileLocations(tile))
+				openList.Enqueue(vec);
+			closedList.Add(tile);
 			for (int attempts = 0; range >= 0 || (range < 0 && attempts <= 150); attempts++)
 			{
 				if (openList.Count <= 0)
 					yield break;
 				Vector2 currentTile = openList.Dequeue();
-				if (closedList.Contains(currentTile))
-					ModEntry.monitor.Log($"{currentTile.X}, {currentTile.Y}");
 				closedList.Add(currentTile);
 				if (loc.terrainFeatures.TryGetValue(currentTile, out var tf))
 				{
@@ -56,21 +56,23 @@ namespace BetterBeehouses
 					if (index > 0 && IndexIsFlower(index))
 						yield return index;
 				} 
-				else if (loc.objects.TryGetValue(tile, out StardewValley.Object obj))
+				else if (loc.objects.TryGetValue(currentTile, out StardewValley.Object obj))
 				{
 					if (obj is IndoorPot pot) //pot crop
 					{
-						if (ModEntry.config.UseForageFlowers && pot.heldObject.Value != null) //forage in pot
+						if (Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers))
 						{
-							var ho = pot.heldObject.Value;
-							if (ho.CanBeGrabbed && ObjectIsFlower(ho))
-								yield return ho.ParentSheetIndex;
+							if (ModEntry.config.UseForageFlowers && pot.heldObject.Value != null) //forage in pot
+							{
+								var ho = pot.heldObject.Value;
+								if (ho.CanBeGrabbed && ObjectIsFlower(ho))
+									yield return ho.ParentSheetIndex;
+							}
+							Crop crop = pot.hoeDirt.Value?.crop;
+							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value)
+								&& (extraCheck is null || extraCheck(crop)))
+								yield return crop.indexOfHarvest.Value; //flower in pot
 						}
-						Crop crop = pot.hoeDirt.Value?.crop;
-						if (Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers) &&
-							IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value)
-							&& (extraCheck is null || extraCheck(crop)))
-							yield return crop.indexOfHarvest.Value; //flower in pot
 					}
 					else
 					{
