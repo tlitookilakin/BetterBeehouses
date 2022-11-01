@@ -40,9 +40,7 @@ namespace BetterBeehouses
             if (helper.ModRegistry.IsLoaded("Digus.ProducerFrameworkMod") && !config.PatchPFM)
                 monitor.Log(i18n.Get("general.pfmPatchDisabled"), LogLevel.Info);
             harmony.PatchAll();
-            PFMPatch.Setup();
-            AutomatePatch.Setup();
-            PFMAutomatePatch.Setup();
+            config.Patch();
             config.RegisterModConfigMenu(ModManifest);
         }
         public override object GetApi()
