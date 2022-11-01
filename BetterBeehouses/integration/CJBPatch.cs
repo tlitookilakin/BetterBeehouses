@@ -46,7 +46,7 @@ namespace BetterBeehouses.integration
 				isPatched = false;
 			}
 		}
-		public static IEnumerable<T> GetFlavorWrapper<T>(IEnumerable<T> __result, object __instance, SObject item)
+		public static IEnumerable<T> GetFlavorWrapper<T>(IEnumerable<T> __result, object __instance, SObject item) where T : class
 		{
 			foreach (var n in __result)
 				yield return n;
@@ -64,8 +64,7 @@ namespace BetterBeehouses.integration
 					honey.Price += item.Price * 2;
 					return honey;
 				};
-				TryCreate?.Invoke(__instance, new object[] { 6, IDOffset.GetValue(__instance), Generate });
-				// working,,, but not? fix it later
+				yield return TryCreate?.Invoke(__instance, new object[] { 6, IDOffset.GetValue(__instance), Generate }) as T;
 			}
 			
 		}
