@@ -31,6 +31,7 @@ namespace BetterBeehouses
             api = new();
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.Content.AssetRequested += AssetRequested;
+            helper.Events.GameLoop.DayStarted += (s, e) => integration.CJBPatch.ReloadFruits();
         }
         private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
         {

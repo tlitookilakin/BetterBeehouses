@@ -16,17 +16,29 @@ namespace BetterBeehouses.integration
 	internal class CJBPatch
 	{
 		private static bool isPatched = false;
+		private static HashSet<int> knownFruits;
 		private static MethodInfo TryCreate;
 		private static MethodInfo Postfix;
 		private static FieldInfo IDOffset;
 		private static MethodInfo GetVariants;
 		private static readonly ISemanticVersion Version = new SemanticVersion("2.1.7");
 
+		internal static void ReloadFruits()
+		{
+			if (!ModEntry.helper.ModRegistry.IsLoaded("CJBok.ItemSpawner") ||
+				ModEntry.helper.ModRegistry.Get("CJBok.ItemSpawner").Manifest.Version.IsOlderThan(Version))
+				return;
+
+			knownFruits = GetKnownFruits();
+		}
+
 		internal static void Setup()
 		{
 			if (!ModEntry.helper.ModRegistry.IsLoaded("CJBok.ItemSpawner") || 
 				ModEntry.helper.ModRegistry.Get("CJBok.ItemSpawner").Manifest.Version.IsOlderThan(Version))
 				return;
+
+			knownFruits ??= GetKnownFruits();
 
 			var type = AccessTools.TypeByName("CJBItemSpawner.Framework.ItemData.ItemRepository");
 			TryCreate ??= AccessTools.Method(type, "TryCreate");
@@ -51,7 +63,8 @@ namespace BetterBeehouses.integration
 			foreach (var n in __result)
 				yield return n;
 
-			if (item.HasContextTag("honey_source"))
+			if (item.HasContextTag("honey_source") || 
+				(ModEntry.config.UseAnyFruitTrees && item.Category != -80 && knownFruits.Contains(item.ParentSheetIndex)))
 			{
 				// this is godawful
 				Func<object, Item> Generate = (_) =>
@@ -66,7 +79,17 @@ namespace BetterBeehouses.integration
 				};
 				yield return TryCreate?.Invoke(__instance, new object[] { 6, IDOffset.GetValue(__instance), Generate }) as T;
 			}
-			
+		}
+		private static HashSet<int> GetKnownFruits()
+		{
+			var treedata = ModEntry.helper.GameContent.Load<Dictionary<int, string>>("Data/fruitTrees");
+			if (treedata is null)
+				return new();
+			HashSet<int> ret = new();
+			foreach (var tree in treedata.Values)
+				if (int.TryParse(tree.GetChunk('/', 2), out int fruit))
+					ret.Add(fruit);
+			return ret;
 		}
 	}
 }
