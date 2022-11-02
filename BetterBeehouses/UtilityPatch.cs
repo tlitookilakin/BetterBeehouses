@@ -53,7 +53,7 @@ namespace BetterBeehouses
 					int index = tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruitsOnTree.Value > 0 ? tree.indexOfFruit.Value :
 						tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) ? dirt.crop.indexOfHarvest.Value : 0;
 
-					if (index > 0 && (IndexIsFlower(index) || ModEntry.config.UseAnyFruitTrees))
+					if (index > 0 && ((ModEntry.config.UseAnyFruitTrees && tf is FruitTree) || IndexIsFlower(index)))
 						yield return index;
 				} 
 				else if (loc.objects.TryGetValue(currentTile, out StardewValley.Object obj))
