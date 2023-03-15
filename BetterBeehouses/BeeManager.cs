@@ -36,12 +36,12 @@ namespace BetterBeehouses
 			// if in-world drawing is available use that
 			if (ModEntry.AeroCore is not null)
 			{
-				ModEntry.AeroCore.OnDrawingWorld += (b) => DrawBees(b, false);
+				ModEntry.AeroCore.OnDrawingWorld += DrawBees;
 				// TODO: replace particle bees
 			}
 			else
 			{
-				ModEntry.helper.Events.Display.RenderedWorld += (s, e) => DrawBees(e.SpriteBatch, true);
+				ModEntry.helper.Events.Display.RenderedWorld += (s, e) => DrawBees(e.SpriteBatch);
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace BetterBeehouses
 			bees.Value.Clear();
 		}
 
-		private static void DrawBees(SpriteBatch b, bool shift)
+		private static void DrawBees(SpriteBatch b)
 		{
 			var houses = bee_houses.Value;
 			if (houses.Count == 0 || !ModEntry.config.BeePaths)
@@ -82,7 +82,7 @@ namespace BetterBeehouses
 			var beev = bees.Value;
 			var tex = ModEntry.BeeTex;
 			var time = Game1.currentGameTime.ElapsedGameTime.TotalMilliseconds;
-			var view = shift ? new Vector2(Game1.viewport.X, Game1.viewport.Y) : Vector2.Zero;
+			var view = new Vector2(Game1.viewport.X, Game1.viewport.Y);
 			for (int i = 0; i < beev.Count; i++)
 			{
 				var bee = beev[i];
@@ -96,8 +96,8 @@ namespace BetterBeehouses
 				if (bee.pct >= 0.0)
 				{
 					// draw
-					var pos = Vector2.Lerp(bee.target, bee.source, MathF.Abs(1f - (float)bee.pct)) - view;
-					b.Draw(tex, pos, bee.sourceRect, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, pos.Y * .0001f);
+					var pos = Vector2.Lerp(bee.target, bee.source, MathF.Abs(1f - (float)bee.pct));
+					b.Draw(tex, pos - view, bee.sourceRect, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, (pos.Y + 48f) * .0001f);
 
 					// move
 					bee.millis += time;
