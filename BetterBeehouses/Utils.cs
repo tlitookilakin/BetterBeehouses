@@ -1,10 +1,13 @@
-﻿using HarmonyLib;
+﻿using BetterBeehouses.integration;
+using HarmonyLib;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using static BetterBeehouses.Config;
 
 namespace BetterBeehouses
 {
@@ -99,5 +102,59 @@ namespace BetterBeehouses
 				return str[z..i];
 			return "";
 		}
+        internal static void AddQuickBool(this IGMCMAPI api, object inst, IManifest manifest, string prop)
+        {
+            var p = inst.GetType().GetProperty(prop);
+			var cfname = prop.Decap();
+			api.AddBoolOption(manifest,
+                p.GetGetMethod().CreateDelegate<Func<bool>>(inst),
+                p.GetSetMethod().CreateDelegate<Action<bool>>(inst),
+                () => ModEntry.i18n.Get($"config.{cfname}.name"),
+                () => ModEntry.i18n.Get($"config.{cfname}.desc")
+            );
+		}
+		internal static void AddQuickFloat(this IGMCMAPI api, object inst, IManifest manifest, string prop, float? min = null, float? max = null, float? inc = null)
+		{
+			var p = inst.GetType().GetProperty(prop);
+			var cfname = prop.Decap();
+			api.AddNumberOption(manifest,
+				p.GetGetMethod().CreateDelegate<Func<float>>(inst),
+				p.GetSetMethod().CreateDelegate<Action<float>>(inst),
+				() => ModEntry.i18n.Get($"config.{cfname}.name"),
+				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
+                min, max, inc
+			);
+		}
+		internal static void AddQuickInt(this IGMCMAPI api, object inst, IManifest manifest, string prop, int? min = null, int? max = null, int? inc = null)
+		{
+			var p = inst.GetType().GetProperty(prop);
+			var cfname = prop.Decap();
+			api.AddNumberOption(manifest,
+				p.GetGetMethod().CreateDelegate<Func<int>>(inst),
+				p.GetSetMethod().CreateDelegate<Action<int>>(inst),
+				() => ModEntry.i18n.Get($"config.{cfname}.name"),
+				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
+                min, max, inc
+			);
+		}
+		internal static void AddQuickEnum<TE>(this IGMCMAPI api, object inst, IManifest manifest, string prop) where TE : Enum
+		{
+			var p = inst.GetType().GetProperty(prop);
+            var cfname = prop.Decap();
+            var tenum = typeof(TE);
+            var tname = tenum.Name.Decap();
+			api.AddTextOption(manifest,
+				() => p.GetValue(inst).ToString(),
+				(s) => p.SetValue(inst, (TE)Enum.Parse(tenum, s)),
+				() => ModEntry.i18n.Get($"config.{cfname}.name"),
+				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
+                Enum.GetNames(tenum),
+                (s) => ModEntry.i18n.Get($"config.{tname}.{s}")
+			);
+		}
+        internal static string Decap(this string src)
+            => src.Length > 0 ? char.ToLower(src[0]) + src[1..] : string.Empty;
+        internal static float Next(this Random rand, float max)
+            => (float)rand.NextDouble() * max;
 	}
 }
