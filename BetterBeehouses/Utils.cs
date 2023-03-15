@@ -11,77 +11,77 @@ using static BetterBeehouses.Config;
 
 namespace BetterBeehouses
 {
-    static class Utils
-    {
-        private static MethodInfo addItemMethod = typeof(Utils).MethodNamed("AddItem");
+	static class Utils
+	{
+		private static MethodInfo addItemMethod = typeof(Utils).MethodNamed("AddItem");
 		public static MethodInfo PropertyGetter(this Type type, string name) => AccessTools.PropertyGetter(type, name);
 		public static MethodInfo PropertySetter(this Type type, string name) => AccessTools.PropertySetter(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name)
-        {
-            return AccessTools.Method(type, name);
-        }
-        public static MethodInfo MethodNamed(this Type type, string name, Type[] args)
-        {
-            return AccessTools.Method(type, name, args);
-        }
-        public static FieldInfo FieldNamed(this Type type, string name)
-        {
-            return AccessTools.Field(type, name);
-        }
-        public static CodeInstruction WithLabels(this CodeInstruction code, params Label[] labels)
-        {
-            foreach (Label label in labels)
-                code.labels.Add(label);
+		{
+			return AccessTools.Method(type, name);
+		}
+		public static MethodInfo MethodNamed(this Type type, string name, Type[] args)
+		{
+			return AccessTools.Method(type, name, args);
+		}
+		public static FieldInfo FieldNamed(this Type type, string name)
+		{
+			return AccessTools.Field(type, name);
+		}
+		public static CodeInstruction WithLabels(this CodeInstruction code, params Label[] labels)
+		{
+			foreach (Label label in labels)
+				code.labels.Add(label);
 
-            return code;
-        }
-        public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
-        {
-            return where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
-        }
-        public static void AddDictionaryEntry(IAssetData asset, object key, string path)
-        {
-            Type T = asset.DataType;
-            if (!T.IsGenericType || T.GetGenericTypeDefinition() != typeof(Dictionary<,>))
-                return;
+			return code;
+		}
+		public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
+		{
+			return where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
+		}
+		public static void AddDictionaryEntry(IAssetData asset, object key, string path)
+		{
+			Type T = asset.DataType;
+			if (!T.IsGenericType || T.GetGenericTypeDefinition() != typeof(Dictionary<,>))
+				return;
 
-            Type[] types = T.GetGenericArguments();
-            addItemMethod.MakeGenericMethod(types).Invoke(null, new object[] {asset, key, path});
-        }
-        public static void AddItem<k, v>(IAssetData asset, k key, string path)
-        {
-            var model = asset.AsDictionary<k, v>().Data;
-            var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
-            model.Add(key, entry);
-        }
-        public static string Uniformize(this string str)
-        {
-            var s = str.AsSpan();
-            var r = new Span<char>(new char[s.Length]);
-            int len = 0;
-            int last = 0;
-            for (int i = 0; i < s.Length; i++)
-            {
-                if (!char.IsWhiteSpace(s[i]))
-                    continue;
+			Type[] types = T.GetGenericArguments();
+			addItemMethod.MakeGenericMethod(types).Invoke(null, new object[] {asset, key, path});
+		}
+		public static void AddItem<k, v>(IAssetData asset, k key, string path)
+		{
+			var model = asset.AsDictionary<k, v>().Data;
+			var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
+			model.Add(key, entry);
+		}
+		public static string Uniformize(this string str)
+		{
+			var s = str.AsSpan();
+			var r = new Span<char>(new char[s.Length]);
+			int len = 0;
+			int last = 0;
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (!char.IsWhiteSpace(s[i]))
+					continue;
 
-                if (i - last <= 1)
-                {
-                    last = i + 1;
-                    continue;
-                }
+				if (i - last <= 1)
+				{
+					last = i + 1;
+					continue;
+				}
 
-                s[last..i].CopyTo(r[len..]);
-                len += i - last;
-                last = i + 1;
-            }
-            if (last < s.Length)
-            {
-                s[last..].CopyTo(r[len..]);
-                len += s.Length - last;
-            }
-            return new string(r[..len]).ToLowerInvariant();
-        }
+				s[last..i].CopyTo(r[len..]);
+				len += i - last;
+				last = i + 1;
+			}
+			if (last < s.Length)
+			{
+				s[last..].CopyTo(r[len..]);
+				len += s.Length - last;
+			}
+			return new string(r[..len]).ToLowerInvariant();
+		}
 		public static string GetChunk(this string str, char delim, int which)
 		{
 			int i = 0;
@@ -102,16 +102,16 @@ namespace BetterBeehouses
 				return str[z..i];
 			return "";
 		}
-        internal static void AddQuickBool(this IGMCMAPI api, object inst, IManifest manifest, string prop)
-        {
-            var p = inst.GetType().GetProperty(prop);
+		internal static void AddQuickBool(this IGMCMAPI api, object inst, IManifest manifest, string prop)
+		{
+			var p = inst.GetType().GetProperty(prop);
 			var cfname = prop.Decap();
 			api.AddBoolOption(manifest,
-                p.GetGetMethod().CreateDelegate<Func<bool>>(inst),
-                p.GetSetMethod().CreateDelegate<Action<bool>>(inst),
-                () => ModEntry.i18n.Get($"config.{cfname}.name"),
-                () => ModEntry.i18n.Get($"config.{cfname}.desc")
-            );
+				p.GetGetMethod().CreateDelegate<Func<bool>>(inst),
+				p.GetSetMethod().CreateDelegate<Action<bool>>(inst),
+				() => ModEntry.i18n.Get($"config.{cfname}.name"),
+				() => ModEntry.i18n.Get($"config.{cfname}.desc")
+			);
 		}
 		internal static void AddQuickFloat(this IGMCMAPI api, object inst, IManifest manifest, string prop, float? min = null, float? max = null, float? inc = null)
 		{
@@ -122,7 +122,7 @@ namespace BetterBeehouses
 				p.GetSetMethod().CreateDelegate<Action<float>>(inst),
 				() => ModEntry.i18n.Get($"config.{cfname}.name"),
 				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
-                min, max, inc
+				min, max, inc
 			);
 		}
 		internal static void AddQuickInt(this IGMCMAPI api, object inst, IManifest manifest, string prop, int? min = null, int? max = null, int? inc = null)
@@ -134,27 +134,27 @@ namespace BetterBeehouses
 				p.GetSetMethod().CreateDelegate<Action<int>>(inst),
 				() => ModEntry.i18n.Get($"config.{cfname}.name"),
 				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
-                min, max, inc
+				min, max, inc
 			);
 		}
 		internal static void AddQuickEnum<TE>(this IGMCMAPI api, object inst, IManifest manifest, string prop) where TE : Enum
 		{
 			var p = inst.GetType().GetProperty(prop);
-            var cfname = prop.Decap();
-            var tenum = typeof(TE);
-            var tname = tenum.Name.Decap();
+			var cfname = prop.Decap();
+			var tenum = typeof(TE);
+			var tname = tenum.Name.Decap();
 			api.AddTextOption(manifest,
 				() => p.GetValue(inst).ToString(),
 				(s) => p.SetValue(inst, (TE)Enum.Parse(tenum, s)),
 				() => ModEntry.i18n.Get($"config.{cfname}.name"),
 				() => ModEntry.i18n.Get($"config.{cfname}.desc"),
-                Enum.GetNames(tenum),
-                (s) => ModEntry.i18n.Get($"config.{tname}.{s}")
+				Enum.GetNames(tenum),
+				(s) => ModEntry.i18n.Get($"config.{tname}.{s}")
 			);
 		}
-        internal static string Decap(this string src)
-            => src.Length > 0 ? char.ToLower(src[0]) + src[1..] : string.Empty;
-        internal static float Next(this Random rand, float max)
-            => (float)rand.NextDouble() * max;
+		internal static string Decap(this string src)
+			=> src.Length > 0 ? char.ToLower(src[0]) + src[1..] : string.Empty;
+		internal static float Next(this Random rand, float max)
+			=> (float)rand.NextDouble() * max;
 	}
 }
