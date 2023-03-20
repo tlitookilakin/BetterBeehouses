@@ -7,6 +7,7 @@ using StardewValley;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley.BellsAndWhistles;
+using BetterBeehouses.integration;
 
 namespace BetterBeehouses
 {
@@ -24,7 +25,8 @@ namespace BetterBeehouses
 	{
 		private static readonly PerScreen<List<Bee>> bees = new(() => new());
 		private static readonly PerScreen<List<Vector2>> bee_houses = new(() => new());
-		private static readonly Vector2 offset = new(16f, 16f);
+
+		private static readonly PerScreen<Dictionary<Vector2, IParticleManager>> particles = new(() => new());
 
 		internal static void Init()
 		{
@@ -37,7 +39,7 @@ namespace BetterBeehouses
 			if (ModEntry.AeroCore is not null)
 			{
 				ModEntry.AeroCore.OnDrawingWorld += DrawBees;
-				// TODO: replace particle bees
+				ModEntry.AeroCore.OnDrawingWorld += DrawParticles;
 			}
 			else
 			{
@@ -48,31 +50,69 @@ namespace BetterBeehouses
 		private static void UpdateObjects(object _, ObjectListChangedEventArgs ev)
 		{
 			var houses = bee_houses.Value;
-			foreach(var pair in ev.Removed)
+			var particle = particles.Value;
+			foreach (var pair in ev.Removed)
+			{
 				houses.Remove(pair.Key);
-			foreach((var pos, var obj) in ev.Added)
+				particle.Remove(pair.Key);
+			}
+			foreach ((var pos, var obj) in ev.Added)
+			{
 				if (obj.Name is "Bee House")
+				{
 					houses.Add(pos);
+					if (ModEntry.AeroCore is not null)
+						particle[pos] = BuildParticles(pos);
+				}
+			}
+		}
+		private static IParticleManager BuildParticles(Vector2 tile)
+		{
+			var emitter = new ParticleEmitter() { 
+				Region = new((int)(tile.X) * 64, (int)(tile.Y) * 64 - 32, 64, 64)
+			};
+			var manager = ModEntry.AeroCore.CreateParticleSystem(ModEntry.helper.ModContent, "assets/AeroBees.json", emitter, 20);
+			return manager;
 		}
 
 		private static void ChangeLocation(GameLocation where)
 		{
 			var houses = bee_houses.Value;
 			var beev = bees.Value;
+			var parts = particles.Value;
 			houses.Clear();
 			beev.Clear();
+			parts.Clear();
 			foreach (var obj in where.Objects.Values)
 				if (obj.Name is "Bee House")
 					houses.Add(obj.TileLocation);
 			for (int i = 0; i < houses.Count * 5; i++)
 				beev.Add(new() { pct = Game1.random.NextDouble() * -10.0 });
+			if (ModEntry.AeroCore is not null)
+				foreach (var pos in houses)
+					parts[pos] = BuildParticles(pos);
 		}
 		private static void Exit(object _, ReturnedToTitleEventArgs ev)
 		{
 			bee_houses.Value.Clear();
 			bees.Value.Clear();
+			particles.Value.Clear();
 		}
+		private static void DrawParticles(SpriteBatch b)
+		{
+			var nodes = particles.Value;
+			if (!ModEntry.config.Particles || nodes.Count == 0 || !ProducingHere())
+				return;
 
+			var view = new Vector2(-Game1.viewport.X, -Game1.viewport.Y);
+			var millis = (int)Game1.currentGameTime.ElapsedGameTime.TotalMilliseconds;
+			foreach(var man in nodes.Values)
+			{
+				man.Tick(millis);
+				man.Offset = view;
+				man.Draw(b);
+			}
+		}
 		private static void DrawBees(SpriteBatch b)
 		{
 			var houses = bee_houses.Value;

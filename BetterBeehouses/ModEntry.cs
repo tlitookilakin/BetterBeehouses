@@ -40,13 +40,13 @@ namespace BetterBeehouses
 		private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
 		{
 			monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
+			if (helper.ModRegistry.IsLoaded("tlitookilakin.AeroCore") &&
+				helper.ModRegistry.Get("tlitookilakin.AeroCore").Manifest.Version.IsNewerThan("0.9.4"))
+				AeroCore = helper.ModRegistry.GetApi<IAeroCoreAPI>("tlitookilakin.AeroCore");
 			if (helper.ModRegistry.IsLoaded("Pathoschild.Automate") && !config.PatchAutomate)
 				monitor.Log(i18n.Get("general.automatePatchDisabled"), LogLevel.Info);
 			if (helper.ModRegistry.IsLoaded("Digus.ProducerFrameworkMod") && !config.PatchPFM)
 				monitor.Log(i18n.Get("general.pfmPatchDisabled"), LogLevel.Info);
-			if (helper.ModRegistry.IsLoaded("tlitookilakin.AeroCore") &&
-				helper.ModRegistry.Get("tlitookilakin.AeroCore").Manifest.Version.IsNewerThan("0.9.4"))
-				AeroCore = helper.ModRegistry.GetApi<IAeroCoreAPI>("tlitookilakin.AeroCore");
 			BeeManager.Init();
 			harmony.PatchAll();
 			Config.Patch();
@@ -56,7 +56,7 @@ namespace BetterBeehouses
 			=> api;
 		private void AssetRequested(object _, AssetRequestedEventArgs ev)
 		{
-			if (config.Particles && ev.NameWithoutLocale.IsEquivalentTo("Mods/aedenthorn.ParticleEffects/dict"))
+			if (config.Particles && AeroCore is null && ev.NameWithoutLocale.IsEquivalentTo("Mods/aedenthorn.ParticleEffects/dict"))
 				ev.Edit(data => Utils.AddDictionaryEntry(data, "tlitookilakin.BetterBeehouses.Bees", "beeParticle.json"));
 			else if (ev.NameWithoutLocale.IsEquivalentTo("Data/ObjectContextTags"))
 				ev.Edit(AddTags);
