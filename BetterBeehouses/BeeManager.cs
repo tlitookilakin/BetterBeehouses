@@ -76,7 +76,7 @@ namespace BetterBeehouses
 		private static void DrawBees(SpriteBatch b)
 		{
 			var houses = bee_houses.Value;
-			if (houses.Count == 0 || !ModEntry.config.BeePaths)
+			if (houses.Count == 0 || !ModEntry.config.BeePaths || !ProducingHere())
 				return;
 
 			var beev = bees.Value;
@@ -138,5 +138,8 @@ namespace BetterBeehouses
 				return enumer.Current.Key;
 			return source;
 		}
+		private static bool ProducingHere()
+			=> ObjectPatch.CanProduceHere(Game1.currentLocation) && 
+			(Game1.currentSeason != "Winter" || Utils.GetProduceHere(Game1.currentLocation, ModEntry.config.ProduceInWinter));
 	}
 }

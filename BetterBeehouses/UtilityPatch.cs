@@ -16,6 +16,7 @@ namespace BetterBeehouses
 
 		[HarmonyPatch("findCloseFlower", new Type[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) })]
 		[HarmonyPrefix]
+		[HarmonyPriority(Priority.High)]
 		internal static bool preCheck(GameLocation location, Vector2 startTileLocation, int range, Func<Crop, bool> additional_check, ref Crop __result)
 		{
 			if (ModEntry.config.UseRandomFlower)
@@ -23,11 +24,16 @@ namespace BetterBeehouses
 				var items = GetAllNearFlowers(location, startTileLocation, range, additional_check).ToArray();
 				if (items.Length > 0)
 					__result = CropFromIndex(items[Game1.random.Next(items.Length)]);
-			} else
+				else
+					__result = null;
+				return false;
+			} else if (ModEntry.config.UseFruitTrees || ModEntry.config.UseGiantCrops || 
+				ModEntry.config.UseForageFlowers || Utils.GetProduceHere(location, ModEntry.config.UsePottedFlowers))
 			{
 				__result = CropFromIndex(GetAllNearFlowers(location, startTileLocation, range, additional_check).FirstOrDefault());
+				return false;
 			}
-			return false;
+			return true;
 		}
 		public static IEnumerable<KeyValuePair<Vector2, int>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range = -1, Func<Crop, bool> extraCheck = null)
 		{
@@ -42,15 +48,12 @@ namespace BetterBeehouses
 
 			Queue<Vector2> openList = new();
 			HashSet<Vector2> closedList = new();
-			foreach(var vec in Utility.getAdjacentTileLocations(tile))
-				openList.Enqueue(vec);
-			closedList.Add(tile);
+			openList.Enqueue(tile);
 			for (int attempts = 0; range >= 0 || (range < 0 && attempts <= 150); attempts++)
 			{
 				if (openList.Count <= 0)
 					yield break;
 				Vector2 currentTile = openList.Dequeue();
-				closedList.Add(currentTile);
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
 					yield return new(currentTile, gc);
@@ -91,6 +94,7 @@ namespace BetterBeehouses
 				foreach (Vector2 v in Utility.getAdjacentTileLocations(currentTile))
 					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - tile.X) + Math.Abs(v.Y - tile.Y) <= range))
 						openList.Enqueue(v);
+				closedList.Add(currentTile);
 			}
 		}
 		private static bool IsGrown(Crop crop, Func<Crop, bool> extraCheck = null)

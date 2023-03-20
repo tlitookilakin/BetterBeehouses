@@ -56,7 +56,7 @@ namespace BetterBeehouses
 			=> api;
 		private void AssetRequested(object _, AssetRequestedEventArgs ev)
 		{
-			if (config.Particles && ev.NameWithoutLocale.IsDirectlyUnderPath("Mods/aedenthorn.ParticleEffects/dict"))
+			if (config.Particles && ev.NameWithoutLocale.IsEquivalentTo("Mods/aedenthorn.ParticleEffects/dict"))
 				ev.Edit(data => Utils.AddDictionaryEntry(data, "tlitookilakin.BetterBeehouses.Bees", "beeParticle.json"));
 			else if (ev.NameWithoutLocale.IsEquivalentTo("Data/ObjectContextTags"))
 				ev.Edit(AddTags);
