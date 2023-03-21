@@ -1,13 +1,12 @@
 ﻿using BetterBeehouses.integration;
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using static BetterBeehouses.Config;
+using FastExpressionCompiler.LightExpression;
 
 namespace BetterBeehouses
 {
@@ -17,17 +16,11 @@ namespace BetterBeehouses
 		public static MethodInfo PropertyGetter(this Type type, string name) => AccessTools.PropertyGetter(type, name);
 		public static MethodInfo PropertySetter(this Type type, string name) => AccessTools.PropertySetter(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name)
-		{
-			return AccessTools.Method(type, name);
-		}
+			=> AccessTools.Method(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name, Type[] args)
-		{
-			return AccessTools.Method(type, name, args);
-		}
+			=> AccessTools.Method(type, name, args);
 		public static FieldInfo FieldNamed(this Type type, string name)
-		{
-			return AccessTools.Field(type, name);
-		}
+			=> AccessTools.Field(type, name);
 		public static CodeInstruction WithLabels(this CodeInstruction code, params Label[] labels)
 		{
 			foreach (Label label in labels)
@@ -36,9 +29,7 @@ namespace BetterBeehouses
 			return code;
 		}
 		public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
-		{
-			return where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
-		}
+			=> where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
 		public static void AddDictionaryEntry(IAssetData asset, object key, string path)
 		{
 			Type T = asset.DataType;
@@ -53,6 +44,26 @@ namespace BetterBeehouses
 			var model = asset.AsDictionary<k, v>().Data;
 			var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
 			model.Add(key, entry);
+		}
+		// copied from AtraBase. Thanks atravita!
+		public static Action<TObject, TField> GetInstanceFieldSetter<TObject, TField>(this FieldInfo field)
+		{
+			if (field is null)
+				return null;
+			if (!typeof(TObject).IsAssignableTo(field.DeclaringType))
+				throw new ArgumentException($"{typeof(TObject).FullName} is not assignable to {field.DeclaringType?.FullName}");
+			if (!typeof(TField).IsAssignableTo(field.FieldType))
+				throw new ArgumentException($"{typeof(TField).FullName} is not assignable to {field.FieldType.FullName}");
+			if (field.IsStatic)
+				throw new ArgumentException($"Expected a non-static field");
+
+			ParameterExpression objparam = Expression.ParameterOf<TObject>("obj");
+			ParameterExpression fieldval = Expression.ParameterOf<TField>("fieldval");
+			UnaryExpression convertfield = Expression.Convert(fieldval, field.FieldType);
+			MemberExpression fieldsetter = Expression.Field(objparam, field);
+			BinaryExpression assignexpress = Expression.Assign(fieldsetter, convertfield);
+
+			return Expression.Lambda<Action<TObject, TField>>(assignexpress, objparam, fieldval).CompileFast();
 		}
 		public static string Uniformize(this string str)
 		{

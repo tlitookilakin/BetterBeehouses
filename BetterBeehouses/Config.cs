@@ -43,7 +43,8 @@ namespace BetterBeehouses
 		}
 		private int flowerBoost = 2;
 		public bool UseAnyFruitTrees { set; get; } = false;
-		public bool BeePaths { set; get; } = false;
+		public bool BeePaths { set; get; } = true;
+		public int ParticleCount { get; set; } = 20;
 
 		private ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -70,7 +71,8 @@ namespace BetterBeehouses
 			UseFlowerBoost = false;
 			FlowersPerBoost = 2;
 			UseAnyFruitTrees = false;
-			BeePaths = false;
+			BeePaths = true;
+			ParticleCount = 20;
 		}
 
 		public void ApplyConfig()
@@ -79,13 +81,14 @@ namespace BetterBeehouses
 			Patch();
 		}
 
-		public static void Patch()
+		public void Patch()
 		{
 			integration.AutomatePatch.Setup();
 			integration.PFMPatch.Setup();
 			integration.PFMAutomatePatch.Setup();
 			integration.CJBPatch.Setup();
 			ModEntry.helper.GameContent.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
+			BeeManager.ApplyConfigCount(this.ParticleCount);
 		}
 
 		public void RegisterModConfigMenu(IManifest manifest)
@@ -117,8 +120,12 @@ namespace BetterBeehouses
 
 			//integration
 			api.AddPage(manifest, "integration", () => i18n.Get("config.integration.name"));
-			if (ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
+			if (ModEntry.AeroCore is not null || ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
+			{
 				api.AddQuickBool(this, manifest, nameof(Particles));
+				if (ModEntry.AeroCore is not null) // not easily supported with Particles mod
+					api.AddQuickInt(this, manifest, nameof(ParticleCount), 1, 40);
+			}
 			api.AddQuickBool(this, manifest, nameof(PatchAutomate));
 			api.AddQuickBool(this, manifest, nameof(PatchPFM));
 			api.AddQuickBool(this, manifest, nameof(PatchCJB));

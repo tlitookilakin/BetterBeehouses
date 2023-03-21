@@ -13,6 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="FastExpressionCompiler.LightExpression" Version="3.3.3" />
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.0" />
 	</ItemGroup>
 

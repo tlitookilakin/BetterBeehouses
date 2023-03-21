@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using BetterBeehouses.integration;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
@@ -6,13 +7,18 @@ using StardewValley.TerrainFeatures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace BetterBeehouses
 {
 	[HarmonyPatch(typeof(Utility))]
 	class UtilityPatch
 	{
+		private static Action<Crop, Vector2> tposf;
+
+		internal static void Init()
+		{
+			tposf = typeof(Crop).FieldNamed("tilePosition").GetInstanceFieldSetter<Crop, Vector2>();
+		}
 
 		[HarmonyPatch("findCloseFlower", new Type[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) })]
 		[HarmonyPrefix]
@@ -46,6 +52,7 @@ namespace BetterBeehouses
 								if(Math.Abs(giant.tile.X + x - tile.X) + Math.Abs(giant.tile.Y + y - tile.Y) <= range)
 									GiantCrops.Add(new(giant.tile.X + x, giant.tile.Y + y), giant.parentSheetIndex.Value);
 
+			var wildflowers = WildFlowers.GetData(loc);
 			Queue<Vector2> openList = new();
 			HashSet<Vector2> closedList = new();
 			openList.Enqueue(tile);
@@ -57,6 +64,10 @@ namespace BetterBeehouses
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
 					yield return new(currentTile, gc);
+				}
+				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
+				{
+					yield return new(currentTile, wilf.indexOfHarvest.Value);
 				}
 				else if (loc.terrainFeatures.TryGetValue(currentTile, out var tf))
 				{
@@ -120,6 +131,7 @@ namespace BetterBeehouses
 				return null;
 			Crop ret = new();
 			ret.indexOfHarvest.Value = what.Value;
+			tposf(ret, what.Key);
 			return ret;
 		}
 		private static bool ObjectIsFlower(StardewValley.Object obj)

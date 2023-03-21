@@ -58,5 +58,7 @@
   "config.patchCJB.name": "CJB Integration",
   "config.patchCJB.desc": "Patch CJB Item Spawner to register missing honey items",
   "config.beePaths.name": "Bee Paths",
-  "config.beePaths.desc": "Shows bees moving between beehouses and the flowers they're connected to"
+  "config.beePaths.desc": "Shows bees moving between beehouses and the flowers they're connected to",
+  "config.particleCount.name": "Particle Count",
+  "config.particleCount.desc": "How many bees should show at each hive (not including bee paths)"
 }

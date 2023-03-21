@@ -5,7 +5,7 @@
 		"MinCurve": 20,
 		"MaxCurve": 160,
 		"MinSpeed": 30,
-		"MaxSpeed": 180,
+		"MaxSpeed": 60,
 		"MinLife": 10,
 		"MaxLife": 30
 	},

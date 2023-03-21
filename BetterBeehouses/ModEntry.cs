@@ -39,6 +39,7 @@ namespace BetterBeehouses
 		}
 		private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
 		{
+			UtilityPatch.Init();
 			monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
 			if (helper.ModRegistry.IsLoaded("tlitookilakin.AeroCore") &&
 				helper.ModRegistry.Get("tlitookilakin.AeroCore").Manifest.Version.IsNewerThan("0.9.4"))
@@ -49,7 +50,8 @@ namespace BetterBeehouses
 				monitor.Log(i18n.Get("general.pfmPatchDisabled"), LogLevel.Info);
 			BeeManager.Init();
 			harmony.PatchAll();
-			Config.Patch();
+			config.Patch();
+			WildFlowers.Setup();
 			config.RegisterModConfigMenu(ModManifest);
 		}
 		public override object GetApi()

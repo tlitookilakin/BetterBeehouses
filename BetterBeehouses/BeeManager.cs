@@ -27,6 +27,7 @@ namespace BetterBeehouses
 		private static readonly PerScreen<List<Vector2>> bee_houses = new(() => new());
 
 		private static readonly PerScreen<Dictionary<Vector2, IParticleManager>> particles = new(() => new());
+		private static int pamt = -1;
 
 		internal static void Init()
 		{
@@ -45,6 +46,20 @@ namespace BetterBeehouses
 			{
 				ModEntry.helper.Events.Display.RenderedWorld += (s, e) => DrawBees(e.SpriteBatch);
 			}
+		}
+
+		internal static void ApplyConfigCount(int amt)
+		{
+			if (pamt == amt || amt < 0)
+				return;
+
+			pamt = amt;
+			var parts = particles.Value;
+			var houses = bee_houses.Value;
+			parts.Clear();
+			if (ModEntry.AeroCore is not null)
+				foreach(var house in houses)
+					parts[house] = BuildParticles(house);
 		}
 
 		private static void UpdateObjects(object _, ObjectListChangedEventArgs ev)
@@ -68,10 +83,11 @@ namespace BetterBeehouses
 		}
 		private static IParticleManager BuildParticles(Vector2 tile)
 		{
-			var emitter = new ParticleEmitter() { 
-				Region = new((int)(tile.X) * 64, (int)(tile.Y) * 64 - 32, 64, 64)
+			var emitter = new ParticleEmitter() {
+				Region = new((int)tile.X * 64, (int)tile.Y * 64 - 32, 64, 64),
+				Rate = 10000 / pamt
 			};
-			var manager = ModEntry.AeroCore.CreateParticleSystem(ModEntry.helper.ModContent, "assets/AeroBees.json", emitter, 20);
+			var manager = ModEntry.AeroCore.CreateParticleSystem(ModEntry.helper.ModContent, "assets/AeroBees.json", emitter, pamt);
 			return manager;
 		}
 

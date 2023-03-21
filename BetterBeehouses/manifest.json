@@ -35,6 +35,10 @@
     {
         "UniqueID": "tlitookilakin.AeroCore",
         "IsRequired": false
+    },
+    {
+        "UniqueID": "aedenthorn.Wildflowers",
+        "IsRequired": false
     }
   ]
 }
