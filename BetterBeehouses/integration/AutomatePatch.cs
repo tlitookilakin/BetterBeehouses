@@ -30,6 +30,12 @@ namespace BetterBeehouses.integration
 			machineGetter ??= targetClass.PropertyGetter("Machine");
 			locationGetter ??= targetClass.PropertyGetter("Location");
 
+			if (machineGetter is null || locationGetter is null)
+			{
+				ModEntry.monitor.Log($"Failed to retrieve getter(s) for automate! Automate will not be patched.", LogLevel.Warn); 
+				return false;
+			}
+
 			if (!isPatched && ModEntry.config.PatchAutomate)
 			{
 				isPatched = false;
@@ -100,6 +106,8 @@ namespace BetterBeehouses.integration
 		}
 		private static void ManipulateObject(SObject obj, Farmer owner, object machine)
 		{
+			if (machine is null)
+				return;
 			var beehouse = machineGetter.Invoke(machine, null) as SObject;
 			ObjectPatch.ManipulateObject(obj, owner, locationGetter.Invoke(machine, null) as GameLocation,
 				beehouse?.TileLocation ?? default);
