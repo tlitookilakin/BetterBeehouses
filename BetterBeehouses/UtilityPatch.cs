@@ -41,16 +41,16 @@ namespace BetterBeehouses
 			}
 			return true;
 		}
-		public static IEnumerable<KeyValuePair<Vector2, int>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range = -1, Func<Crop, bool> extraCheck = null)
+		public static IEnumerable<KeyValuePair<Vector2, string>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range = -1, Func<Crop, bool> extraCheck = null)
 		{
-			var GiantCrops = new Dictionary<Vector2, int>();
+			var GiantCrops = new Dictionary<Vector2, string[]>();
 			if (ModEntry.config.UseGiantCrops)
 				foreach(var clump in loc.resourceClumps)
-					if (clump is GiantCrop giant && IndexIsFlower(giant.parentSheetIndex.Value))
+					if (clump is GiantCrop giant && GiantFlower(giant, out var harvest, loc))
 						for(int x = 0; x < giant.width.Value; x++)
 							for(int y = 0; y < giant.height.Value; y++)
-								if(Math.Abs(giant.tile.X + x - tile.X) + Math.Abs(giant.tile.Y + y - tile.Y) <= range)
-									GiantCrops.Add(new(giant.tile.X + x, giant.tile.Y + y), giant.parentSheetIndex.Value);
+								if(Math.Abs(giant.Tile.X + x - tile.X) + Math.Abs(giant.Tile.Y + y - tile.Y) <= range)
+									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), harvest);
 
 			var wildflowers = WildFlowers.GetData(loc);
 			Queue<Vector2> openList = new();
@@ -63,7 +63,8 @@ namespace BetterBeehouses
 				Vector2 currentTile = openList.Dequeue();
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
-					yield return new(currentTile, gc);
+					for(int i = 0; i < gc.Length; i++)
+						yield return new(currentTile, gc[i]);
 				}
 				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
 				{
@@ -73,9 +74,10 @@ namespace BetterBeehouses
 				{
 					if (tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) && IndexIsFlower(dirt.crop.indexOfHarvest.Value))
 						yield return new(currentTile, dirt.crop.indexOfHarvest.Value);
-					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruitsOnTree.Value > 0 && 
-						(ModEntry.config.UseAnyFruitTrees || IndexIsFlower(tree.indexOfFruit.Value)))
-							yield return new(currentTile, tree.indexOfFruit.Value);
+					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruit.Count is > 0)
+						foreach (var fruit in tree.fruit)
+							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
+								yield return new(currentTile, fruit.QualifiedItemId);
 				}
 				else if (loc.objects.TryGetValue(currentTile, out StardewValley.Object obj))
 				{
@@ -83,22 +85,21 @@ namespace BetterBeehouses
 					{
 						if (Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers))
 						{
-							if (ModEntry.config.UseForageFlowers && pot.heldObject.Value != null) //forage in pot
+							if (ModEntry.config.UseForageFlowers && pot.heldObject.Value is not null) //forage in pot
 							{
 								var ho = pot.heldObject.Value;
-								if (ho.CanBeGrabbed && ObjectIsFlower(ho))
-									yield return new(currentTile, ho.ParentSheetIndex);
+								if (ho.CanBeGrabbed && IsFlower(ho))
+									yield return new(currentTile, ho.QualifiedItemId);
 							}
 							Crop crop = pot.hoeDirt.Value?.crop;
-							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value)
-								&& (extraCheck is null || extraCheck(crop)))
+							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value) && (extraCheck is null || extraCheck(crop)))
 								yield return new(currentTile, crop.indexOfHarvest.Value); //flower in pot
 						}
 					}
 					else
 					{
-						if (ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && ObjectIsFlower(obj))
-							yield return new(currentTile, obj.ParentSheetIndex);
+						if (ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && IsFlower(obj))
+							yield return new(currentTile, obj.QualifiedItemId);
 						//non-pot forage
 					}
 				}
@@ -118,26 +119,44 @@ namespace BetterBeehouses
 					return extraCheck(crop);
 			return false;
 		}
-		private static bool IndexIsFlower(int index)
+		private static bool IsFlower(Item item)
+			=> item.Category is -80 || item.HasContextTag("honey_source");
+
+		private static bool GiantFlower(GiantCrop giant, out string[] harvest, GameLocation location)
 		{
+			harvest = Array.Empty<string>();
+
+			var data = giant.GetData();
+			if (data is null || data.HarvestItems.Count is 0)
+				return false;
+
+			harvest = new string[data.HarvestItems.Count];
+			int i = 0;
+			foreach ( var item in data.HarvestItems)
+				if (IndexIsFlower(item.ItemId) && Utils.CheckItemDrop(item, location))
+					harvest[i++] = item.ItemId;
+			harvest = harvest[..i];
+			return harvest.Length is not 0;
+		}
+
+		private static bool IndexIsFlower(string index)
+		{
+			if (!ItemRegistry.Exists(index))
+				return false;
 			if (ModEntry.config.AnythingHoney)
 				return true;
 
-			if (index == 1720) // DGA reserved fake ID
-				return false;
-			var res = new StardewValley.Object(index, 1);
-			return res.Category == -80 || res.HasContextTag("honey_source");
+			return ItemRegistry.GetData(index).Category == -80 || ItemContextTagManager.HasBaseTag(index, "honey_source");
 		}
-		private static Crop CropFromIndex(KeyValuePair<Vector2, int> what)
+
+		private static Crop CropFromIndex(KeyValuePair<Vector2, string> what)
 		{
-			if (what.Value == 0)
+			if (what.Value == "")
 				return null;
 			Crop ret = new();
 			ret.indexOfHarvest.Value = what.Value;
 			tposf(ret, what.Key);
 			return ret;
 		}
-		private static bool ObjectIsFlower(StardewValley.Object obj)
-			=> obj is not null && (obj.Category == -80 || obj.HasContextTag("honey_source"));
 	}
 }

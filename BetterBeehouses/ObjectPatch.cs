@@ -10,7 +10,6 @@ using Math = System.Math;
 
 namespace BetterBeehouses
 {
-	[HarmonyPatch(typeof(Object))]
 	class ObjectPatch
 	{
 		private static ILHelper minutesElapsedPatch = new ILHelper("Object: Minutes Elapsed")
@@ -181,20 +180,7 @@ namespace BetterBeehouses
 			if (where is null || obj is null)
 				return;
 			obj.Quality = GetQuality(who, obj.Quality);
-			float val = obj.Price * ModEntry.config.ValueMultiplier;
-			int cap = ModEntry.config.CapFactor;
-			
-			if(val > cap)
-				val = cap * MathF.Pow(
-					val / cap,
-					1f / (1f + ModEntry.config.CapCurve)
-				);
-			
-			/* new algo
-			if (val > cap)
-				val = MathF.Log(val - cap + 1f, ModEntry.config.CapCurve * 2f + 2f);
-			*/
-			obj.Price = (int)(val + .5f);
+
 			var test = UtilityPatch.GetAllNearFlowers(where, tile, ModEntry.config.FlowerRange).ToArray();
 			if (ModEntry.config.UseFlowerBoost)
 				obj.Stack += Math.Max(UtilityPatch.GetAllNearFlowers(where, tile, ModEntry.config.FlowerRange).Count() - 1, 0) 
@@ -217,7 +203,7 @@ namespace BetterBeehouses
 			if (!ModEntry.config.UseQuality)
 				return original;
 
-			float boost = who is not null && who.eventsSeen.Contains(2120303) ? ModEntry.config.BearBoost : 1f;
+			float boost = who is not null && who.eventsSeen.Contains("2120303") ? ModEntry.config.BearBoost : 1f;
 
 			double chanceForGoldQuality = 0.2 * (who?.FarmingLevel ?? 0.0 / 10.0) + 0.2 * boost * ((who?.FarmingLevel ?? 0.0 + 2.0) / 12.0) + 0.01;
 			double chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);

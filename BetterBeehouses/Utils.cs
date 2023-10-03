@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using FastExpressionCompiler.LightExpression;
+using StardewValley.GameData;
 
 namespace BetterBeehouses
 {
@@ -64,34 +65,6 @@ namespace BetterBeehouses
 			BinaryExpression assignexpress = Expression.Assign(fieldsetter, convertfield);
 
 			return Expression.Lambda<Action<TObject, TField>>(assignexpress, objparam, fieldval).CompileFast();
-		}
-		public static string Uniformize(this string str)
-		{
-			var s = str.AsSpan();
-			var r = new Span<char>(new char[s.Length]);
-			int len = 0;
-			int last = 0;
-			for (int i = 0; i < s.Length; i++)
-			{
-				if (!char.IsWhiteSpace(s[i]))
-					continue;
-
-				if (i - last <= 1)
-				{
-					last = i + 1;
-					continue;
-				}
-
-				s[last..i].CopyTo(r[len..]);
-				len += i - last;
-				last = i + 1;
-			}
-			if (last < s.Length)
-			{
-				s[last..].CopyTo(r[len..]);
-				len += s.Length - last;
-			}
-			return new string(r[..len]).ToLowerInvariant();
 		}
 		public static string GetChunk(this string str, char delim, int which)
 		{
@@ -169,5 +142,17 @@ namespace BetterBeehouses
 			=> src.Length > 0 ? char.ToLower(src[0]) + src[1..] : string.Empty;
 		internal static float Next(this Random rand, float max)
 			=> (float)rand.NextDouble() * max;
+
+		internal static bool CheckItemDrop(this GenericSpawnItemDataWithCondition spawn, GameLocation location = null, Farmer who = null)
+			=> ItemRegistry.Exists(spawn.ItemId) && GameStateQuery.CheckConditions(spawn.Condition, location, who);
+
+		internal static string ListAppend(this string list, string item) 
+		{
+			var s = list.Trim();
+			var i = item.Trim();
+			if (i[^1] is ',')
+				i = i[..^1];
+			return s.Length is 0 ? item : s[^1] is ',' ? s + i : s + ',' + i;
+		}
 	}
 }

@@ -16,16 +16,6 @@ namespace BetterBeehouses
 		public float ValueMultiplier { get; set; } = 1f;
 		public bool Particles { get; set; } = true;
 		public bool UseQuality { get; set; } = false;
-		public bool PatchAutomate { get; set; } = true;
-		public bool PatchPFM { get; set; } = true;
-		public bool PatchCJB { get; set; } = true;
-		public int CapFactor { get; set; } = 700;
-		private float capCurve = 0f;
-		public float CapCurve
-		{
-			get { return capCurve; }
-			set { capCurve = Math.Clamp(value, 0f, 1f); }
-		}
 		private float bearBoost = 1f;
 		public float BearBoost
 		{
@@ -61,11 +51,6 @@ namespace BetterBeehouses
 			UseForageFlowers = false;
 			Particles = true;
 			UseQuality = false;
-			PatchAutomate = true;
-			PatchPFM = true;
-			PatchCJB = true;
-			CapFactor = 700;
-			CapCurve = 0f;
 			BearBoost = 1f;
 			UseGiantCrops = true;
 			UseFruitTrees = true;
@@ -87,11 +72,8 @@ namespace BetterBeehouses
 
 		public void Patch()
 		{
-			integration.AutomatePatch.Setup();
-			integration.PFMPatch.Setup();
-			integration.PFMAutomatePatch.Setup();
-			integration.CJBPatch.Setup();
 			ModEntry.helper.GameContent.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
+			ModEntry.helper.GameContent.InvalidateCache("Data/Machines");
 			BeeManager.ApplyConfigCount(ParticleCount, PathParticleCount);
 		}
 
@@ -143,17 +125,9 @@ namespace BetterBeehouses
 			api.AddQuickBool(this, manifest, nameof(BeePaths));
 			api.AddQuickInt(this, manifest, nameof(PathParticleCount), 0, 20);
 
-			//integration
-			api.AddPage(manifest, "integration", () => i18n.Get("config.integration.name"));
-			api.AddQuickBool(this, manifest, nameof(PatchAutomate));
-			api.AddQuickBool(this, manifest, nameof(PatchPFM));
-			api.AddQuickBool(this, manifest, nameof(PatchCJB));
-
 			//price balancing
 			api.AddPage(manifest, "price", () => i18n.Get("config.price.name"));
 			api.AddQuickFloat(this, manifest, nameof(ValueMultiplier), .1f, .2f, .1f);
-			api.AddQuickInt(this, manifest, nameof(CapFactor), 100);
-			api.AddQuickFloat(this, manifest, nameof(CapCurve), 0f, 1f, .01f);
 		}
 		public Config()
 		{
