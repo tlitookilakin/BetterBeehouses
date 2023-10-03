@@ -3,7 +3,7 @@ using StardewValley.GameData.Machines;
 using System;
 using System.Collections.Generic;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.framework
 {
 	internal class MachineEditor
 	{
@@ -22,7 +22,8 @@ namespace BetterBeehouses
 			try
 			{
 				EditData(machine);
-			} catch (AssetEditException ex)
+			}
+			catch (AssetEditException ex)
 			{
 				ModEntry.monitor.Log("Could not edit bee house: " + ex.Message, LogLevel.Warn);
 			}

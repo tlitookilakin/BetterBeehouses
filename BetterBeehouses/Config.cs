@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using BetterBeehouses.framework;
+using StardewModdingAPI;
 using System;
 
 namespace BetterBeehouses

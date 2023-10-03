@@ -5,7 +5,6 @@ using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
 using FastExpressionCompiler.LightExpression;
 using StardewValley.GameData;
 
@@ -13,7 +12,7 @@ namespace BetterBeehouses
 {
 	static class Utils
 	{
-		private static MethodInfo addItemMethod = typeof(Utils).MethodNamed("AddItem");
+		private static readonly MethodInfo addItemMethod = typeof(Utils).MethodNamed("AddItem");
 		public static MethodInfo PropertyGetter(this Type type, string name) => AccessTools.PropertyGetter(type, name);
 		public static MethodInfo PropertySetter(this Type type, string name) => AccessTools.PropertySetter(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name)
@@ -22,13 +21,6 @@ namespace BetterBeehouses
 			=> AccessTools.Method(type, name, args);
 		public static FieldInfo FieldNamed(this Type type, string name)
 			=> AccessTools.Field(type, name);
-		public static CodeInstruction WithLabels(this CodeInstruction code, params Label[] labels)
-		{
-			foreach (Label label in labels)
-				code.labels.Add(label);
-
-			return code;
-		}
 		public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
 			=> where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
 		public static void AddDictionaryEntry(IAssetData asset, object key, string path)
@@ -65,26 +57,6 @@ namespace BetterBeehouses
 			BinaryExpression assignexpress = Expression.Assign(fieldsetter, convertfield);
 
 			return Expression.Lambda<Action<TObject, TField>>(assignexpress, objparam, fieldval).CompileFast();
-		}
-		public static string GetChunk(this string str, char delim, int which)
-		{
-			int i = 0;
-			int n = 0;
-			int z = 0;
-			while (i < str.Length)
-			{
-				if (str[i] == delim)
-				{
-					if (n == which)
-						return str[z..i];
-					n++;
-					z = i + 1;
-				}
-				i++;
-			}
-			if (n == which)
-				return str[z..i];
-			return "";
 		}
 		internal static void AddQuickBool(this IGMCMAPI api, object inst, IManifest manifest, string prop)
 		{

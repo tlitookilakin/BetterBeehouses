@@ -1,6 +1,4 @@
-﻿using StardewValley;
-
-namespace BetterBeehouses
+﻿namespace BetterBeehouses
 {
 	public interface IBetterBeehousesAPI
 	{
@@ -9,6 +7,7 @@ namespace BetterBeehouses
 		/// </summary>
 		/// <returns>Tile Radius</returns>
 		public int GetSearchRadius();
+
 		/// <summary>
 		/// Returns the value multiplier for honey from bee houses
 		/// </summary>

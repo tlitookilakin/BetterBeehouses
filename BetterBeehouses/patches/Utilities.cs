@@ -8,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.patches
 {
 	[HarmonyPatch(typeof(Utility))]
-	class UtilityPatch
+	class Utilities
 	{
 		private static Action<Crop, Vector2> tposf;
 
@@ -33,7 +33,8 @@ namespace BetterBeehouses
 				else
 					__result = null;
 				return false;
-			} else if (ModEntry.config.UseFruitTrees || ModEntry.config.UseGiantCrops || 
+			}
+			else if (ModEntry.config.UseFruitTrees || ModEntry.config.UseGiantCrops ||
 				ModEntry.config.UseForageFlowers || Utils.GetProduceHere(location, ModEntry.config.UsePottedFlowers))
 			{
 				__result = CropFromIndex(GetAllNearFlowers(location, startTileLocation, range, additional_check).FirstOrDefault());
@@ -45,25 +46,25 @@ namespace BetterBeehouses
 		{
 			var GiantCrops = new Dictionary<Vector2, string[]>();
 			if (ModEntry.config.UseGiantCrops)
-				foreach(var clump in loc.resourceClumps)
+				foreach (var clump in loc.resourceClumps)
 					if (clump is GiantCrop giant && GiantFlower(giant, out var harvest, loc))
-						for(int x = 0; x < giant.width.Value; x++)
-							for(int y = 0; y < giant.height.Value; y++)
-								if(Math.Abs(giant.Tile.X + x - tile.X) + Math.Abs(giant.Tile.Y + y - tile.Y) <= range)
+						for (int x = 0; x < giant.width.Value; x++)
+							for (int y = 0; y < giant.height.Value; y++)
+								if (Math.Abs(giant.Tile.X + x - tile.X) + Math.Abs(giant.Tile.Y + y - tile.Y) <= range)
 									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), harvest);
 
 			var wildflowers = WildFlowers.GetData(loc);
 			Queue<Vector2> openList = new();
 			HashSet<Vector2> closedList = new();
 			openList.Enqueue(tile);
-			for (int attempts = 0; range >= 0 || (range < 0 && attempts <= 150); attempts++)
+			for (int attempts = 0; range >= 0 || range < 0 && attempts <= 150; attempts++)
 			{
 				if (openList.Count <= 0)
 					yield break;
 				Vector2 currentTile = openList.Dequeue();
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
-					for(int i = 0; i < gc.Length; i++)
+					for (int i = 0; i < gc.Length; i++)
 						yield return new(currentTile, gc[i]);
 				}
 				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
@@ -132,8 +133,8 @@ namespace BetterBeehouses
 
 			harvest = new string[data.HarvestItems.Count];
 			int i = 0;
-			foreach ( var item in data.HarvestItems)
-				if (IndexIsFlower(item.ItemId) && Utils.CheckItemDrop(item, location))
+			foreach (var item in data.HarvestItems)
+				if (IndexIsFlower(item.ItemId) && item.CheckItemDrop(location))
 					harvest[i++] = item.ItemId;
 			harvest = harvest[..i];
 			return harvest.Length is not 0;

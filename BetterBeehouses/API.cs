@@ -6,12 +6,8 @@ namespace BetterBeehouses
 	{
 		// TODO: add get all near and get all rect
 		public int GetSearchRadius()
-		{
-			return ModEntry.config.FlowerRange;
-		}
+			=> ModEntry.config.FlowerRange;
 		public float GetValueMultiplier()
-		{
-			return ModEntry.config.ValueMultiplier;
-		}
+			=> ModEntry.config.ValueMultiplier;
 	}
 }

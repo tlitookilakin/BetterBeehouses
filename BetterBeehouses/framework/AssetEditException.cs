@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.framework
 {
 	public class AssetEditException : Exception
 	{

@@ -2,11 +2,11 @@
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using BetterBeehouses.integration;
-using StardewModdingAPI.Utilities;
-using StardewValley;
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.GameData.Objects;
+using BetterBeehouses.patches;
+using BetterBeehouses.framework;
 
 namespace BetterBeehouses
 {
@@ -39,7 +39,7 @@ namespace BetterBeehouses
 		}
 		private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
 		{
-			UtilityPatch.Init();
+			Utilities.Init();
 			monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
 			if (helper.ModRegistry.IsLoaded("tlitookilakin.AeroCore") &&
 				helper.ModRegistry.Get("tlitookilakin.AeroCore").Manifest.Version.IsNewerThan("0.9.4"))

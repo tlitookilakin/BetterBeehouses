@@ -8,8 +8,9 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using BetterBeehouses.integration;
 using HarmonyLib;
+using BetterBeehouses.patches;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.framework
 {
 	internal class Bee
 	{
@@ -34,7 +35,7 @@ namespace BetterBeehouses
 		internal static void Init()
 		{
 			ModEntry.helper.Events.World.ObjectListChanged += UpdateObjects;
-			ModEntry.helper.Events.Player.Warped += (s,e) => ChangeLocation(e.NewLocation);
+			ModEntry.helper.Events.Player.Warped += (s, e) => ChangeLocation(e.NewLocation);
 			ModEntry.helper.Events.GameLoop.SaveLoaded += (s, e) => ChangeLocation(Game1.currentLocation);
 			ModEntry.helper.Events.GameLoop.ReturnedToTitle += Exit;
 		}
@@ -60,13 +61,13 @@ namespace BetterBeehouses
 			var beev = bees.Value;
 			parts.Clear();
 			if (ModEntry.AeroCore is not null)
-				foreach(var house in houses)
+				foreach (var house in houses)
 					parts[house] = BuildParticles(house);
 			var targ = pamt * houses.Count;
 			if (beev.Count > targ)
 				beev.RemoveRange(targ, beev.Count - targ);
 			else if (beev.Count < targ)
-				for(int i = beev.Count; i < targ; i++)
+				for (int i = beev.Count; i < targ; i++)
 					beev.Add(new() { pct = Game1.random.NextDouble() * -10.0 });
 		}
 
@@ -91,7 +92,8 @@ namespace BetterBeehouses
 		}
 		private static IParticleManager BuildParticles(Vector2 tile)
 		{
-			var emitter = new ParticleEmitter() {
+			var emitter = new ParticleEmitter()
+			{
 				Region = new((int)tile.X * 64, (int)tile.Y * 64 - 32, 64, 64),
 				Rate = 10000 / bamt
 			};
@@ -130,7 +132,7 @@ namespace BetterBeehouses
 
 			var view = new Vector2(-Game1.viewport.X, -Game1.viewport.Y);
 			var millis = (int)Game1.currentGameTime.ElapsedGameTime.TotalMilliseconds;
-			foreach(var man in nodes.Values)
+			foreach (var man in nodes.Values)
 			{
 				man.Tick(millis);
 				man.Offset = view;
@@ -176,6 +178,9 @@ namespace BetterBeehouses
 			}
 		}
 
+		private static bool ProducingHere()
+			=> bee_houses.Value.Count is not 0 && Game1.currentLocation.Objects[bee_houses.Value[0]].ShouldTimePassForMachine();
+
 		private static void SetupBee(Bee bee, IList<Vector2> houses)
 		{
 			var src = houses[Game1.random.Next(houses.Count)];
@@ -191,19 +196,16 @@ namespace BetterBeehouses
 		{
 			if (ModEntry.config.UseRandomFlower)
 			{
-				var items = UtilityPatch.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
+				var items = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
 				if (items.Length > 0)
 					return items[Game1.random.Next(items.Length)].Key;
-				else 
+				else
 					return source;
 			}
-			var enumer = UtilityPatch.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
+			var enumer = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
 			if (enumer.MoveNext())
 				return enumer.Current.Key;
 			return source;
 		}
-		private static bool ProducingHere()
-			=> ObjectPatch.CanProduceHere(Game1.currentLocation) && 
-			(Game1.currentSeason != "Winter" || Utils.GetProduceHere(Game1.currentLocation, ModEntry.config.ProduceInWinter));
 	}
 }

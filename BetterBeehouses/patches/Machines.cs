@@ -2,13 +2,12 @@
 using StardewValley;
 using System;
 using System.Linq;
-using xTile.Tiles;
 using SObject = StardewValley.Object;
 
-namespace BetterBeehouses
+namespace BetterBeehouses.patches
 {
 	[HarmonyPatch]
-	internal class MachinePatches
+	internal class Machines
 	{
 		[HarmonyPatch(typeof(SObject), nameof(SObject.ShouldTimePassForMachine))]
 		[HarmonyPostfix]
@@ -33,21 +32,23 @@ namespace BetterBeehouses
 				return result;
 
 			if (ModEntry.config.UseFlowerBoost)
-				result.Stack += Math.Max(UtilityPatch.GetAllNearFlowers(where, machine.TileLocation, ModEntry.config.FlowerRange).Count() - 1, 0)
+				result.Stack += Math.Max(Utilities.GetAllNearFlowers(where, machine.TileLocation, ModEntry.config.FlowerRange).Count() - 1, 0)
 					/ ModEntry.config.FlowersPerBoost;
 
 			return result;
 		}
 
 		public static bool CanProduceHere(GameLocation loc)
-			=> ModEntry.config.ProduceInWinter switch {
+			=> ModEntry.config.ProduceInWinter switch
+			{
 				Config.ProduceWhere.Always => CanProduceIn(loc),
 				Config.ProduceWhere.Indoors => CanProduceIn(loc) && !loc.IsOutdoors,
 				_ => CanProduceIn(loc) && (loc.GetLocationContext().SeasonOverride ?? Game1.season) is not Season.Winter
 			};
 
 		private static bool CanProduceIn(GameLocation loc)
-			=> ModEntry.config.UsableIn switch { 
+			=> ModEntry.config.UsableIn switch
+			{
 				Config.UsableOptions.Anywhere => true,
 				Config.UsableOptions.Outdoors => loc.IsOutdoors,
 				Config.UsableOptions.Greenhouse => loc.IsGreenhouse,
@@ -65,9 +66,9 @@ namespace BetterBeehouses
 			double chanceForGoldQuality = 0.2 * (who?.FarmingLevel ?? 0.0 / 10.0) + 0.2 * boost * ((who?.FarmingLevel ?? 0.0 + 2.0) / 12.0) + 0.01;
 			double chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);
 			return Math.Max(original,
-				(Game1.random.NextDouble() < chanceForGoldQuality / 2.0) ? 4 :
-				(Game1.random.NextDouble() < chanceForGoldQuality) ? 2 :
-				(Game1.random.NextDouble() < chanceForSilverQuality) ? 1 : 0);
+				Game1.random.NextDouble() < chanceForGoldQuality / 2.0 ? 4 :
+				Game1.random.NextDouble() < chanceForGoldQuality ? 2 :
+				Game1.random.NextDouble() < chanceForSilverQuality ? 1 : 0);
 		}
 	}
 }
