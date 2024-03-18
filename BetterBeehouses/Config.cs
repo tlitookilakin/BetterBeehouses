@@ -113,11 +113,9 @@ namespace BetterBeehouses
 
 			//visual
 			api.AddPage(manifest, "visual", () => i18n.Get("config.visual.name"));
-			if (ModEntry.AeroCore is not null || ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
+			if (ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
 			{
 				api.AddQuickBool(this, manifest, nameof(Particles));
-				if (ModEntry.AeroCore is not null) // not easily supported with Particles mod
-					api.AddQuickInt(this, manifest, nameof(ParticleCount), 1, 40);
 			}
 			else
 			{

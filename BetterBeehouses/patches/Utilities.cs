@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace BetterBeehouses.patches
 {
-	[HarmonyPatch(typeof(Utility))]
 	class Utilities
 	{
 		private static Action<Crop, Vector2> tposf;
@@ -18,11 +17,13 @@ namespace BetterBeehouses.patches
 		internal static void Init()
 		{
 			tposf = typeof(Crop).FieldNamed("tilePosition").GetInstanceFieldSetter<Crop, Vector2>();
+			ModEntry.harmony.Patch(
+				typeof(Utility).GetMethod(nameof(Utility.findCloseFlower),
+				new[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) }),
+				prefix: new(typeof(Utilities), nameof(preCheck))
+			);
 		}
 
-		[HarmonyPatch("findCloseFlower", new Type[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) })]
-		[HarmonyPrefix]
-		[HarmonyPriority(Priority.High)]
 		internal static bool preCheck(GameLocation location, Vector2 startTileLocation, int range, Func<Crop, bool> additional_check, ref Crop __result)
 		{
 			if (ModEntry.config.UseRandomFlower)
@@ -42,7 +43,7 @@ namespace BetterBeehouses.patches
 			}
 			return true;
 		}
-		public static IEnumerable<KeyValuePair<Vector2, string>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range = -1, Func<Crop, bool> extraCheck = null)
+		public static IEnumerable<KeyValuePair<Vector2, string>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range, Func<Crop, bool> extraCheck = null)
 		{
 			var GiantCrops = new Dictionary<Vector2, string[]>();
 			if (ModEntry.config.UseGiantCrops)

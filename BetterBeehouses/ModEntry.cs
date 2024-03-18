@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley.GameData.Objects;
 using BetterBeehouses.patches;
 using BetterBeehouses.framework;
+using StardewValley.GameData.BigCraftables;
 
 namespace BetterBeehouses
 {
@@ -19,7 +20,6 @@ namespace BetterBeehouses
 		internal static string ModID;
 		internal static Config config;
 		internal static API api;
-		internal static IAeroCoreAPI AeroCore;
 		internal static Texture2D BeeTex => beeTex ??= helper.GameContent.Load<Texture2D>("Mods/BetterBeehouses/Bees");
 		private static Texture2D beeTex;
 
@@ -41,11 +41,8 @@ namespace BetterBeehouses
 		{
 			Utilities.Init();
 			monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
-			if (helper.ModRegistry.IsLoaded("tlitookilakin.AeroCore") &&
-				helper.ModRegistry.Get("tlitookilakin.AeroCore").Manifest.Version.IsNewerThan("0.9.4"))
-				AeroCore = helper.ModRegistry.GetApi<IAeroCoreAPI>("tlitookilakin.AeroCore");
 			BeeManager.Init();
-			harmony.PatchAll();
+			Machines.Patch(harmony);
 			config.Patch();
 			WildFlowers.Setup();
 			config.RegisterModConfigMenu(ModManifest);
@@ -54,14 +51,14 @@ namespace BetterBeehouses
 			=> api;
 		private void AssetRequested(object _, AssetRequestedEventArgs ev)
 		{
-			if (config.Particles && AeroCore is null && ev.NameWithoutLocale.IsEquivalentTo("Mods/aedenthorn.ParticleEffects/dict"))
-				ev.Edit(data => Utils.AddDictionaryEntry(data, "tlitookilakin.BetterBeehouses.Bees", "beeParticle.json"));
-			else if (ev.NameWithoutLocale.IsEquivalentTo("Data/Objects"))
+			if (ev.NameWithoutLocale.IsEquivalentTo("Data/Objects"))
 				ev.Edit(AddTags);
 			else if (ev.NameWithoutLocale.IsEquivalentTo("Mods/BetterBeehouses/Bees"))
 				ev.LoadFromModFile<Texture2D>("assets/bees.png", AssetLoadPriority.Medium);
 			else if (ev.NameWithoutLocale.IsEquivalentTo("Data/Machines"))
 				ev.Edit(MachineEditor.Edit, AssetEditPriority.Late);
+			else if (ev.NameWithoutLocale.IsEquivalentTo("Data/BigCraftables"))
+				ev.Edit(AddBeeHouseTag, AssetEditPriority.Late);
 		}
 		private void AssetInvalidated(object _, AssetsInvalidatedEventArgs ev)
 		{
@@ -76,6 +73,14 @@ namespace BetterBeehouses
 			data["22"].ContextTags.Add("honey_source");
 			data["418"].ContextTags.Add("honey_source");
 			data["402"].ContextTags.Add("honey_source");
+		}
+
+		private static void AddBeeHouseTag(IAssetData asset)
+		{
+			var data = asset.AsDictionary<string, BigCraftableData>().Data;
+			var item = data["10"];
+			item.ContextTags ??= new();
+			item.ContextTags.Add("bee_house");
 		}
 	}
 }

@@ -6,16 +6,24 @@ using SObject = StardewValley.Object;
 
 namespace BetterBeehouses.patches
 {
-	[HarmonyPatch]
 	internal class Machines
 	{
-		[HarmonyPatch(typeof(SObject), nameof(SObject.ShouldTimePassForMachine))]
-		[HarmonyPostfix]
-		internal static bool ShouldTimePass(bool result, SObject __instance)
-			=> result || CanProduceHere(__instance.Location);
+		public static void Patch(Harmony harmony)
+		{
+			harmony.Patch(
+				typeof(SObject).GetMethod(nameof(SObject.ShouldTimePassForMachine)),
+				postfix: new(typeof(Machines), nameof(ShouldTimePass))
+			);
 
-		[HarmonyPatch(typeof(MachineDataUtility), nameof(MachineDataUtility.GetOutputItem))]
-		[HarmonyPostfix]
+			harmony.Patch(
+				typeof(MachineDataUtility).GetMethod(nameof(MachineDataUtility.GetOutputItem)),
+				postfix: new(typeof(Machines), nameof(GetOutputItem))
+			);
+		}
+
+		internal static bool ShouldTimePass(bool result, SObject __instance)
+			=> result || (__instance.HasContextTag("bee_house") && CanProduceHere(__instance.Location));
+
 		internal static Item GetOutputItem(Item result, SObject machine, Farmer who)
 		{
 			// only modify if the machine is a bee house and the output is honey
@@ -39,12 +47,14 @@ namespace BetterBeehouses.patches
 		}
 
 		public static bool CanProduceHere(GameLocation loc)
-			=> ModEntry.config.ProduceInWinter switch
-			{
-				Config.ProduceWhere.Always => CanProduceIn(loc),
-				Config.ProduceWhere.Indoors => CanProduceIn(loc) && !loc.IsOutdoors,
-				_ => CanProduceIn(loc) && (loc.GetLocationContext().SeasonOverride ?? Game1.season) is not Season.Winter
-			};
+			=>  loc.GetSeason() is not Season.Winter ?
+				CanProduceIn(loc) :
+				ModEntry.config.ProduceInWinter switch
+				{
+					Config.ProduceWhere.Always => CanProduceIn(loc),
+					Config.ProduceWhere.Indoors => CanProduceIn(loc) && !loc.IsOutdoors,
+					_ => CanProduceIn(loc)
+				};
 
 		private static bool CanProduceIn(GameLocation loc)
 			=> ModEntry.config.UsableIn switch
