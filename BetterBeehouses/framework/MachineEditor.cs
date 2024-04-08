@@ -32,7 +32,9 @@ namespace BetterBeehouses.framework
 		{
 			if (data.OutputRules.Count is 0)
 				throw new AssetEditException("No output for beehouses detected!");
-			var rule = FindByNameOrFirst(data.OutputRules, "Default");
+
+			var rule = FindByNameOrFirst(data.OutputRules, "Default") 
+				?? throw new AssetEditException("No output for beehouses detected!");
 
 			EditSeason(rule, data);
 			EditSpeed(data);
@@ -49,8 +51,22 @@ namespace BetterBeehouses.framework
 			if (str is null)
 				return;
 
-			foreach (var trigger in rule.Triggers)
-				trigger.Condition = trigger.Condition.Replace("!LOCATION_SEASON Target Winter", str, StringComparison.OrdinalIgnoreCase);
+			if (rule.Triggers is null)
+			{
+				(rule.Triggers = new()).Add(
+					new()
+					{
+						Id = "Default",
+						Condition = str,
+					}
+				);
+				ModEntry.monitor.Log("All triggers missing, adding default! Another mod is tampering with beehouse data.", LogLevel.Warn);
+			}
+			else
+			{
+				foreach (var trigger in rule.Triggers)
+					trigger.Condition = trigger.Condition.Replace("!LOCATION_SEASON Target Winter", str, StringComparison.OrdinalIgnoreCase);
+			}
 
 			data.ClearContentsOvernightCondition = produce switch
 			{
@@ -66,10 +82,16 @@ namespace BetterBeehouses.framework
 		}
 		private static MachineOutputRule FindByNameOrFirst(IList<MachineOutputRule> rules, string name)
 		{
+			MachineOutputRule first = null;
 			foreach (var rule in rules)
-				if (rule.Id == name)
+				if (rule is null)
+					continue;
+				else if (rule.Id == name)
 					return rule;
-			return rules[0];
+				else 
+					first ??= rule;
+
+			return first;
 		}
 	}
 }

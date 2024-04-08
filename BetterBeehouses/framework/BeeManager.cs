@@ -171,13 +171,13 @@ namespace BetterBeehouses.framework
 			{
 				var items = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
 				if (items.Length > 0)
-					return items[Game1.random.Next(items.Length)].Key;
+					return items[Game1.random.Next(items.Length)].Tile;
 				else
 					return source;
 			}
 			var enumer = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
 			if (enumer.MoveNext())
-				return enumer.Current.Key;
+				return enumer.Current.Tile;
 			return source;
 		}
 	}

@@ -1,5 +1,5 @@
-﻿using BetterBeehouses.integration;
-using HarmonyLib;
+﻿using BetterBeehouses.framework;
+using BetterBeehouses.integration;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
@@ -12,11 +12,12 @@ namespace BetterBeehouses.patches
 {
 	class Utilities
 	{
-		private static Action<Crop, Vector2> tposf;
+		// TODO: use seeded random based on tilepos and day index for more reliable randoms
+		// TODO: bush bloom support
+		// TODO: custom bush support
 
 		internal static void Init()
 		{
-			tposf = typeof(Crop).FieldNamed("tilePosition").GetInstanceFieldSetter<Crop, Vector2>();
 			ModEntry.harmony.Patch(
 				typeof(Utility).GetMethod(nameof(Utility.findCloseFlower),
 				new[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) }),
@@ -43,16 +44,16 @@ namespace BetterBeehouses.patches
 			}
 			return true;
 		}
-		public static IEnumerable<KeyValuePair<Vector2, string>> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range, Func<Crop, bool> extraCheck = null)
+		public static IEnumerable<FlowerData> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range, Func<Crop, bool> extraCheck = null)
 		{
-			var GiantCrops = new Dictionary<Vector2, string[]>();
+			var GiantCrops = new Dictionary<Vector2, (string[] harvest, GiantCrop source)>();
 			if (ModEntry.config.UseGiantCrops)
 				foreach (var clump in loc.resourceClumps)
 					if (clump is GiantCrop giant && GiantFlower(giant, out var harvest, loc))
 						for (int x = 0; x < giant.width.Value; x++)
 							for (int y = 0; y < giant.height.Value; y++)
 								if (Math.Abs(giant.Tile.X + x - tile.X) + Math.Abs(giant.Tile.Y + y - tile.Y) <= range)
-									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), harvest);
+									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), (harvest, giant));
 
 			var wildflowers = WildFlowers.GetData(loc);
 			Queue<Vector2> openList = new();
@@ -65,21 +66,21 @@ namespace BetterBeehouses.patches
 				Vector2 currentTile = openList.Dequeue();
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
-					for (int i = 0; i < gc.Length; i++)
-						yield return new(currentTile, gc[i]);
+					for (int i = 0; i < gc.harvest.Length; i++)
+						yield return new(gc.source, currentTile, gc.harvest[i]);
 				}
 				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
 				{
-					yield return new(currentTile, wilf.indexOfHarvest.Value);
+					yield return new(wilf);
 				}
 				else if (loc.terrainFeatures.TryGetValue(currentTile, out var tf))
 				{
 					if (tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) && IndexIsFlower(dirt.crop.indexOfHarvest.Value))
-						yield return new(currentTile, dirt.crop.indexOfHarvest.Value);
+						yield return new(dirt.crop);
 					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruit.Count is > 0)
 						foreach (var fruit in tree.fruit)
 							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
-								yield return new(currentTile, fruit.QualifiedItemId);
+								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree");
 				}
 				else if (loc.objects.TryGetValue(currentTile, out StardewValley.Object obj))
 				{
@@ -91,17 +92,17 @@ namespace BetterBeehouses.patches
 							{
 								var ho = pot.heldObject.Value;
 								if (ho.CanBeGrabbed && IsFlower(ho))
-									yield return new(currentTile, ho.QualifiedItemId);
+									yield return new(currentTile, ho.QualifiedItemId, "Forage") { InPot = true };
 							}
 							Crop crop = pot.hoeDirt.Value?.crop;
 							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value) && (extraCheck is null || extraCheck(crop)))
-								yield return new(currentTile, crop.indexOfHarvest.Value); //flower in pot
+								yield return new(crop) { InPot = true, Tile = currentTile, SourceTile = currentTile }; //flower in pot
 						}
 					}
 					else
 					{
 						if (ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && IsFlower(obj))
-							yield return new(currentTile, obj.QualifiedItemId);
+							yield return new(currentTile, obj.QualifiedItemId, "Forage");
 						//non-pot forage
 					}
 				}
@@ -151,13 +152,29 @@ namespace BetterBeehouses.patches
 			return ItemRegistry.GetData(index).Category == -80 || ItemContextTagManager.HasBaseTag(index, "honey_source");
 		}
 
-		private static Crop CropFromIndex(KeyValuePair<Vector2, string> what)
+		private static Crop CropFromIndex(FlowerData what)
 		{
-			if (what.Value == "")
+			if (what.crop is not null)
+			{
+				if (what.InPot)
+				{
+					what.crop.tilePosition = what.SourceTile;
+					what.crop.modData["tlitookilakin.BetterBeehouses.FromPot"] = "T";
+				}
+
+				return what.crop;
+			}
+
+			if (what.ID == "")
 				return null;
+
 			Crop ret = new();
-			ret.indexOfHarvest.Value = what.Value;
-			tposf(ret, what.Key);
+			ret.indexOfHarvest.Value = what.ID;
+			ret.tilePosition = what.SourceTile;
+			ret.modData["tlitookilakin.BetterBeehouses.SourceType"] = what.type;
+			if (what.InPot)
+				ret.modData["tlitookilakin.BetterBeehouses.FromPot"] = "T";
+
 			return ret;
 		}
 	}

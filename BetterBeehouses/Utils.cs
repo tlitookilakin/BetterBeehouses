@@ -13,14 +13,10 @@ namespace BetterBeehouses
 	static class Utils
 	{
 		private static readonly MethodInfo addItemMethod = typeof(Utils).MethodNamed("AddItem");
-		public static MethodInfo PropertyGetter(this Type type, string name) => AccessTools.PropertyGetter(type, name);
-		public static MethodInfo PropertySetter(this Type type, string name) => AccessTools.PropertySetter(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name)
 			=> AccessTools.Method(type, name);
 		public static MethodInfo MethodNamed(this Type type, string name, Type[] args)
 			=> AccessTools.Method(type, name, args);
-		public static FieldInfo FieldNamed(this Type type, string name)
-			=> AccessTools.Field(type, name);
 		public static bool GetProduceHere(GameLocation loc, Config.ProduceWhere where)
 			=> where is not Config.ProduceWhere.Never && (!loc.IsOutdoors || where is Config.ProduceWhere.Always);
 		public static void AddDictionaryEntry(IAssetData asset, object key, string path)
@@ -37,26 +33,6 @@ namespace BetterBeehouses
 			var model = asset.AsDictionary<k, v>().Data;
 			var entry = ModEntry.helper.ModContent.Load<v>($"assets/{path}");
 			model.Add(key, entry);
-		}
-		// copied from AtraBase. Thanks atravita!
-		public static Action<TObject, TField> GetInstanceFieldSetter<TObject, TField>(this FieldInfo field)
-		{
-			if (field is null)
-				return null;
-			if (!field.DeclaringType.IsAssignableFrom(typeof(TObject)))
-				throw new ArgumentException($"{typeof(TObject).FullName} is not assignable to {field.DeclaringType?.FullName}");
-			if (!field.FieldType.IsAssignableFrom(typeof(TField)))
-				throw new ArgumentException($"{typeof(TField).FullName} is not assignable to {field.FieldType.FullName}");
-			if (field.IsStatic)
-				throw new ArgumentException($"Expected a non-static field");
-
-			ParameterExpression objparam = Expression.ParameterOf<TObject>("obj");
-			ParameterExpression fieldval = Expression.ParameterOf<TField>("fieldval");
-			UnaryExpression convertfield = Expression.Convert(fieldval, field.FieldType);
-			MemberExpression fieldsetter = Expression.Field(objparam, field);
-			BinaryExpression assignexpress = Expression.Assign(fieldsetter, convertfield);
-
-			return Expression.Lambda<Action<TObject, TField>>(assignexpress, objparam, fieldval).CompileFast();
 		}
 		internal static void AddQuickBool(this IGMCMAPI api, object inst, IManifest manifest, string prop)
 		{
