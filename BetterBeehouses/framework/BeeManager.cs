@@ -6,9 +6,6 @@ using System.Linq;
 using StardewValley;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using BetterBeehouses.integration;
-using HarmonyLib;
-using BetterBeehouses.patches;
 using StardewValley.Mods;
 
 namespace BetterBeehouses.framework
@@ -169,13 +166,13 @@ namespace BetterBeehouses.framework
 		{
 			if (ModEntry.config.UseRandomFlower)
 			{
-				var items = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
+				var items = FlowerFinder.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
 				if (items.Length > 0)
-					return items[Game1.random.Next(items.Length)].Tile;
+					return items.SelectFrom(source).Tile;
 				else
 					return source;
 			}
-			var enumer = Utilities.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
+			var enumer = FlowerFinder.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
 			if (enumer.MoveNext())
 				return enumer.Current.Tile;
 			return source;

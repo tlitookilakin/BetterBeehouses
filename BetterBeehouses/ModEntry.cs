@@ -40,12 +40,12 @@ namespace BetterBeehouses
 		private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
 		{
 			Utilities.Init();
-			monitor.Log(helper.Translation.Get("general.patchedModsWarning"), LogLevel.Trace);
 			BeeManager.Init();
 			Machines.Patch(harmony);
 			config.Patch();
 			WildFlowers.Setup();
 			config.RegisterModConfigMenu(ModManifest);
+			PFM.Patch(harmony);
 		}
 		public override object GetApi()
 			=> api;

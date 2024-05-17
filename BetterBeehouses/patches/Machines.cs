@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using BetterBeehouses.framework;
+using HarmonyLib;
 using StardewValley;
 using System;
 using System.Linq;
@@ -40,8 +41,9 @@ namespace BetterBeehouses.patches
 				return result;
 
 			if (ModEntry.config.UseFlowerBoost)
-				result.Stack += Math.Max(Utilities.GetAllNearFlowers(where, machine.TileLocation, ModEntry.config.FlowerRange).Count() - 1, 0)
-					/ ModEntry.config.FlowersPerBoost;
+				result.Stack += Math.Max(
+					FlowerFinder.GetAllNearFlowers(where, machine.TileLocation, ModEntry.config.FlowerRange).Count()
+					- 1, 0) / ModEntry.config.FlowersPerBoost;
 
 			return result;
 		}

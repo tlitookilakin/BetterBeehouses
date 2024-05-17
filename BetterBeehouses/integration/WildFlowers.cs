@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using BetterBeehouses.framework;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 
 namespace BetterBeehouses.integration
 {
-	internal class WildFlowers
+    internal class WildFlowers
 	{
 		internal const string FLAG = "aedenthorn.Wildflowers/wild";
 		private static bool loaded = false;

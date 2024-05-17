@@ -1,4 +1,4 @@
-﻿using BetterBeehouses.patches;
+﻿using BetterBeehouses.framework;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System;
@@ -14,7 +14,7 @@ namespace BetterBeehouses
 			if (range < 0)
 				range = ModEntry.config.FlowerRange;
 
-			return Utilities.GetAllNearFlowers(where, tile, range, predicate).Select(
+			return FlowerFinder.GetAllNearFlowers(where, tile, range, predicate).Select(
 				(f, i) => new KeyValuePair<Vector2, string>(f.Tile, f.ID)
 			);
 		}

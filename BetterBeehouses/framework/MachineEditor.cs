@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace BetterBeehouses.framework
 {
-	internal class MachineEditor
+    internal class MachineEditor
 	{
 		internal static void Edit(IAssetData asset)
 		{
