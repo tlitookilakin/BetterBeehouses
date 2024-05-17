@@ -12,23 +12,53 @@ namespace BetterBeehouses.patches
 		public static void Patch(Harmony harmony)
 		{
 			harmony.Patch(
-				typeof(SObject).GetMethod(nameof(SObject.ShouldTimePassForMachine)),
-				postfix: new(typeof(Machines), nameof(ShouldTimePass))
-			);
-
-			harmony.Patch(
 				typeof(MachineDataUtility).GetMethod(nameof(MachineDataUtility.GetOutputItem)),
 				postfix: new(typeof(Machines), nameof(GetOutputItem))
 			);
+
+			harmony.Patch(
+				typeof(SObject).GetMethod(nameof(SObject.ShouldTimePassForMachine)),
+				postfix: new(typeof(Machines), nameof(ShouldBeehouseRun))
+			);
 		}
 
-		internal static bool ShouldTimePass(bool result, SObject __instance)
-			=> result || (__instance.HasContextTag("bee_house") && CanProduceHere(__instance.Location));
+		private static bool ShouldBeehouseRun(bool runByDefault, SObject __instance)
+		{
+			// already running; let it fly!
+			if (runByDefault)
+				return true;
 
-		internal static Item GetOutputItem(Item result, SObject machine, Farmer who)
+			// not running, and not a beehouse
+			if (__instance.QualifiedItemId is not "(BC)10" &&
+				!ModEntry.config.ModifyCustomBeehouses ||
+				!__instance.HasContextTag("bee_house"))
+				return false;
+
+			var where = __instance.Location;
+			if (where is null)
+				return false;
+
+			return
+				(where.GetSeason() is not Season.Winter || ModEntry.config.ProduceInWinter switch
+				{
+					Config.ProduceWhere.Never => false,
+					Config.ProduceWhere.Always => true,
+					Config.ProduceWhere.Indoors => !where.IsOutdoors,
+					_ => false
+				})
+				&& ModEntry.config.UsableIn switch
+				{
+					Config.UsableOptions.Anywhere => true,
+					Config.UsableOptions.Greenhouse => where.IsGreenhouse,
+					Config.UsableOptions.Outdoors => where.IsOutdoors,
+					_ => false
+				};
+		}
+
+		private static Item GetOutputItem(Item result, SObject machine, Farmer who)
 		{
 			// only modify if the machine is a bee house and the output is honey
-			if (machine.QualifiedItemId is not "(BC)10" || result.QualifiedItemId is not "(O)340")
+			if (!machine.HasContextTag("bee_house") || result.QualifiedItemId is not "(O)340")
 				return result;
 
 			result.Quality = GetQuality(who, result.Quality);
@@ -47,25 +77,6 @@ namespace BetterBeehouses.patches
 
 			return result;
 		}
-
-		public static bool CanProduceHere(GameLocation loc)
-			=>  loc.GetSeason() is not Season.Winter ?
-				CanProduceIn(loc) :
-				ModEntry.config.ProduceInWinter switch
-				{
-					Config.ProduceWhere.Always => CanProduceIn(loc),
-					Config.ProduceWhere.Indoors => CanProduceIn(loc) && !loc.IsOutdoors,
-					_ => CanProduceIn(loc)
-				};
-
-		private static bool CanProduceIn(GameLocation loc)
-			=> ModEntry.config.UsableIn switch
-			{
-				Config.UsableOptions.Anywhere => true,
-				Config.UsableOptions.Outdoors => loc.IsOutdoors,
-				Config.UsableOptions.Greenhouse => loc.IsGreenhouse,
-				_ => false
-			};
 
 		public static int GetQuality(Farmer who, int original)
 		{

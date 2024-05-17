@@ -7,27 +7,63 @@ using StardewValley;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley.Mods;
+using StardewValley.Extensions;
 
 namespace BetterBeehouses.framework
 {
-	internal class Bee
-	{
-		internal Vector2 source;
-		internal Vector2 target;
-		internal double pct;
-		internal double rate;
-		internal int frame;
-		internal Rectangle sourceRect;
-		internal double millis = 0;
-	}
 
 	internal class BeeManager
 	{
+		public class Bee
+		{
+			public Vector2 source;
+			public Vector2 target;
+			public double pct;
+			public double rate;
+			public int frame;
+			public Rectangle sourceRect;
+			public double millis = 0;
+		}
+
+		public class SwarmBee
+		{
+			public Vector2 pos;
+			public float life;
+			public float angle;
+			public float distance;
+			public int frame;
+			public int precharge;
+			public float maxLife;
+			public float direction;
+
+			public SwarmBee()
+			{
+				Reset();
+			}
+
+			public void Reset()
+			{
+				precharge = 0;
+				life = Game1.random.Next(3000f) + 2000f;
+				maxLife = life;
+				angle = Game1.random.Next(MathF.Tau);
+				distance = Game1.random.Next(48f) + 16f;
+				frame = Game1.random.NextBool() ? 0 : 8;
+				direction = Game1.random.NextBool() ? -1 : 1;
+				direction = 1;
+
+				(pos.Y, pos.X) = MathF.SinCos(angle * direction);
+				pos *= -distance;
+				pos.X += Game1.random.Next(-16, 16);
+				pos.Y += Game1.random.Next(-16, 16);
+			}
+		}
+
 		private static readonly PerScreen<List<Bee>> bees = new(() => new());
 		private static readonly PerScreen<List<Vector2>> bee_houses = new(() => new());
+		private static readonly PerScreen<List<SwarmBee[]>> bee_swarms = new(() => new());
 
 		private static int pamt = -1;
-		private static int bamt = -1;
 
 		internal static void Init()
 		{
@@ -48,16 +84,17 @@ namespace BetterBeehouses.framework
 			}
 		}
 
-		internal static void ApplyConfigCount(int amt, int pam)
+		internal static void ApplyConfigCount(int pam)
 		{
-			if (pamt == pam || pam < 0 || amt == bamt || amt < 0)
+			if (pamt == pam || pam < 0)
 				return;
 
 			pamt = pam;
-			bamt = amt;
+
 			var houses = bee_houses.Value;
 			var beev = bees.Value;
 			var targ = pamt * houses.Count;
+
 			if (beev.Count > targ)
 				beev.RemoveRange(targ, beev.Count - targ);
 			else if (beev.Count < targ)
@@ -68,45 +105,122 @@ namespace BetterBeehouses.framework
 		private static void UpdateObjects(object _, ObjectListChangedEventArgs ev)
 		{
 			var houses = bee_houses.Value;
+			var swarms = bee_swarms.Value;
 			foreach (var pair in ev.Removed)
 			{
-				houses.Remove(pair.Key);
+				int index = houses.IndexOf(pair.Key);
+				if (index is -1)
+					continue;
+
+				houses.RemoveAt(index);
+				swarms.RemoveAt(index);
 			}
 			foreach ((var pos, var obj) in ev.Added)
 			{
-				if (obj.Name is "Bee House")
+				if (obj.HasContextTag("bee_house"))
 				{
 					houses.Add(pos);
+					swarms.Add(GenerateSwarm());
+
+					// add more bees if needed
+					var beev = bees.Value;
+					var targ = pamt * houses.Count;
+					for (int i = beev.Count; i < targ; i++)
+						beev.Add(new() { pct = Game1.random.NextDouble() * -10.0 });
 				}
 			}
+		}
+
+		private static SwarmBee[] GenerateSwarm()
+		{
+			var swarm = new SwarmBee[32];
+
+			for (int i = 0; i < 32; i++)
+				swarm[i] = new(){precharge = Game1.random.Next(2000)};
+
+			return swarm;
 		}
 
 		private static void ChangeLocation(GameLocation where)
 		{
 			var houses = bee_houses.Value;
 			var beev = bees.Value;
+			var swarms = bee_swarms.Value;
+			swarms.Clear();
 			houses.Clear();
 			beev.Clear();
+
 			foreach (var obj in where.Objects.Values)
-				if (obj.Name is "Bee House")
+			{
+				if (obj.HasContextTag("bee_house"))
+				{
 					houses.Add(obj.TileLocation);
+					swarms.Add(GenerateSwarm());
+				}
+			}
+
 			for (int i = 0; i < houses.Count * pamt; i++)
 				beev.Add(new() { pct = Game1.random.NextDouble() * -10.0 });
 		}
+
 		private static void Exit(object _, ReturnedToTitleEventArgs ev)
 		{
 			bee_houses.Value.Clear();
 			bees.Value.Clear();
+			bee_swarms.Value.Clear();
 		}
+
 		private static void DrawParticles(SpriteBatch b)
 		{
 			if (!ModEntry.config.Particles || !ProducingHere())
 				return;
 
-			// TODO readd swarms
+			var houses = bee_houses.Value;
+			var swarms = bee_swarms.Value;
+			var elapsed = Game1.currentGameTime.ElapsedGameTime.TotalMilliseconds;
+			var tex = ModEntry.BeeTex;
+
+			int count = Math.Min(houses.Count, swarms.Count);
+			Vector2 tile_offset = new(32f, -32f);
+
+			for (int i = 0; i < count; i++)
+			{
+				var source = Game1.GlobalToLocal(Game1.viewport, houses[i] * 64f + tile_offset);
+				var base_depth = houses[i].Y * 64f;
+
+				foreach(var bee in swarms[i])
+				{
+					if (bee.precharge > 0)
+					{
+						bee.precharge -= (int)elapsed;
+						continue;
+					}
+					else if (bee.life <= 0)
+					{
+						bee.Reset();
+						continue;
+					}
+
+					Vector2 position = source + bee.pos;
+					var (Sin, Cos) = MathF.SinCos(bee.life * MathF.Tau / bee.maxLife * bee.direction + bee.angle);
+					position.X += Cos * bee.distance;
+					position.Y += Sin * bee.distance;
+
+					float depth = (base_depth + Sin * bee.distance + 48f) * .0001f;
+
+					b.Draw(
+						tex, position,
+						new Rectangle((((int)bee.life / 32) & 1) * 8, bee.frame, 8, 8),
+						Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, depth
+					);
+
+					bee.life -= (float)elapsed;
+				}
+			}
 
 			return;
 		}
+
 		private static void DrawBees(SpriteBatch b)
 		{
 			var houses = bee_houses.Value;
@@ -117,17 +231,20 @@ namespace BetterBeehouses.framework
 			var tex = ModEntry.BeeTex;
 			var time = Game1.currentGameTime.ElapsedGameTime.TotalMilliseconds;
 			var view = new Vector2(Game1.viewport.X, Game1.viewport.Y);
+			var max_count = Math.Min(beev.Count, pamt * houses.Count);
+
 			for (int i = 0; i < beev.Count; i++)
 			{
 				var bee = beev[i];
-				if (bee.pct > 2.0)
+
+				if (bee.pct > 2.0 && i < max_count)
 					SetupBee(bee, houses);
 				else if (bee.pct < 0.0)
 					bee.pct = Math.Min(bee.pct + time * .001, 0.0);
 				else if (bee.pct == 0.0)
 					SetupBee(bee, houses);
 
-				if (bee.pct >= 0.0)
+				if (bee.pct is >= 0.0 and <= 2.0)
 				{
 					// draw
 					var pos = Vector2.Lerp(bee.target, bee.source, MathF.Abs(1f - (float)bee.pct));

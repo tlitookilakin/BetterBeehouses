@@ -34,10 +34,10 @@ namespace BetterBeehouses.framework
         private int flowerBoost = 2;
         public bool UseAnyFruitTrees { set; get; } = false;
         public bool BeePaths { set; get; } = true;
-        public int ParticleCount { get; set; } = 20;
         public int PathParticleCount { get; set; } = 5;
         public bool AnythingHoney { get; set; } = false;
         public bool UseBushes { get; set; } = true;
+        public bool ModifyCustomBeehouses { get; set; } = true;
 
         private static ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -60,10 +60,10 @@ namespace BetterBeehouses.framework
             FlowersPerBoost = 2;
             UseAnyFruitTrees = false;
             BeePaths = true;
-            ParticleCount = 20;
             PathParticleCount = 5;
             AnythingHoney = false;
             UseBushes = true;
+            ModifyCustomBeehouses = true;
         }
 
         public void ApplyConfig()
@@ -74,9 +74,8 @@ namespace BetterBeehouses.framework
 
         public void Patch()
         {
-            ModEntry.helper.GameContent.InvalidateCache("Mods/aedenthorn.ParticleEffects/dict");
             ModEntry.helper.GameContent.InvalidateCache("Data/Machines");
-            BeeManager.ApplyConfigCount(ParticleCount, PathParticleCount);
+            BeeManager.ApplyConfigCount(PathParticleCount);
         }
 
         public void RegisterModConfigMenu(IManifest manifest)
@@ -97,6 +96,7 @@ namespace BetterBeehouses.framework
             api.AddQuickFloat(this, manifest, nameof(BearBoost), 1f, 3f, .05f);
             api.AddQuickBool(this, manifest, nameof(UseFlowerBoost));
             api.AddQuickInt(this, manifest, nameof(FlowersPerBoost), 1, 8);
+            api.AddQuickBool(this, manifest, nameof(ModifyCustomBeehouses));
             api.AddQuickLink("sources", manifest);
             api.AddQuickLink("visual", manifest);
             api.AddQuickLink("price", manifest);
@@ -114,20 +114,13 @@ namespace BetterBeehouses.framework
 
             //visual
             api.AddPage(manifest, "visual", () => i18n.Get("config.visual.name"));
-            if (ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.ParticleEffects"))
-            {
-                api.AddQuickBool(this, manifest, nameof(Particles));
-            }
-            else
-            {
-                api.AddParagraph(manifest, () => i18n.Get("config.noparticles"));
-            }
             api.AddQuickBool(this, manifest, nameof(BeePaths));
+            api.AddQuickBool(this, manifest, nameof(Particles));
             api.AddQuickInt(this, manifest, nameof(PathParticleCount), 0, 20);
 
             //price balancing
             api.AddPage(manifest, "price", () => i18n.Get("config.price.name"));
-            api.AddQuickFloat(this, manifest, nameof(ValueMultiplier), .1f, .2f, .1f);
+            api.AddQuickFloat(this, manifest, nameof(ValueMultiplier), .1f, 2f, .1f);
         }
         public Config()
         {

@@ -1,16 +1,12 @@
 ﻿using BetterBeehouses.framework;
-using BetterBeehouses.integration;
 using Microsoft.Xna.Framework;
 using StardewValley;
-using StardewValley.Objects;
-using StardewValley.TerrainFeatures;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BetterBeehouses.patches
 {
-    class Utilities
+	class Utilities
 	{
 		internal static void Init()
 		{
