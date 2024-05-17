@@ -12,9 +12,6 @@ namespace BetterBeehouses.patches
 {
 	class Utilities
 	{
-		// TODO: bush bloom support
-		// TODO: custom bush support
-
 		internal static void Init()
 		{
 			ModEntry.harmony.Patch(
@@ -119,6 +116,22 @@ namespace BetterBeehouses.patches
 						foreach (var fruit in tree.fruit)
 							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
 								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree");
+				}
+
+				// bushes
+				if (ModEntry.config.UseBushes)
+				{
+					for (int i = 0; i < 3; i++)
+					{
+						Vector2 targ = new(currentTile.X - i, currentTile.Y);
+						if (loc.terrainFeatures.TryGetValue(targ, out var tf) && tf is Bush bush && 
+							bush.getBoundingBox().Width > i && bush.inBloom())
+						{
+							var item = bush.GetShakeOffItem();
+							if (IndexIsFlower(item))
+								yield return new(currentTile, item, "Bush") { SourceTile = targ };
+						}
+					}
 				}
 
 				foreach (Vector2 v in Utility.getAdjacentTileLocations(currentTile))

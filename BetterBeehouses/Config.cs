@@ -38,6 +38,7 @@ namespace BetterBeehouses
 		public int ParticleCount { get; set; } = 20;
 		public int PathParticleCount { get; set; } = 5;
 		public bool AnythingHoney { get; set; } = false;
+		public bool UseBushes { get; set; } = true;
 
 		private static ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -63,6 +64,7 @@ namespace BetterBeehouses
 			ParticleCount = 20;
 			PathParticleCount = 5;
 			AnythingHoney = false;
+			UseBushes = true;
 		}
 
 		public void ApplyConfig()
@@ -106,6 +108,7 @@ namespace BetterBeehouses
 			api.AddQuickBool(this, manifest, nameof(UseForageFlowers));
 			api.AddQuickBool(this, manifest, nameof(UseRandomFlower));
 			api.AddQuickBool(this, manifest, nameof(UseGiantCrops));
+			api.AddQuickBool(this, manifest, nameof(UseBushes));
 			api.AddQuickBool(this, manifest, nameof(UseFruitTrees));
 			api.AddQuickBool(this, manifest, nameof(UseAnyFruitTrees));
 			api.AddQuickBool(this, manifest, nameof(AnythingHoney));

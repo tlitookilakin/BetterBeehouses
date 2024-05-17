@@ -69,5 +69,7 @@
   "config.visual.desc": "Cosmetic effects",
   "config.noparticles": "Particles require either AeroCore or the Particles mod",
   "config.anythingHoney.name": "Anything Honey",
-  "config.anythingHoney.desc": "When enabled, allows honey to be made from anything. (Disables the flower check)"
+  "config.anythingHoney.desc": "When enabled, allows honey to be made from anything. (Disables the flower check)",
+  "config.useBushes.name": "Use Bushes",
+  "config.useBushes.desc": "If bee houses should detect flowering bushes"
 }
