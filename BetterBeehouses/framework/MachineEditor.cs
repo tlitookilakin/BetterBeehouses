@@ -87,7 +87,7 @@ namespace BetterBeehouses.framework
 				_ => data.ClearContentsOvernightCondition
 			};
 		}
-		private static string GetIndoorsQuery()
+		public static string GetIndoorsQuery()
 		{
 			return ModEntry.config.UsableIn switch
 			{

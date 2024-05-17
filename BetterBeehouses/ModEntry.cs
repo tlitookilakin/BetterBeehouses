@@ -48,6 +48,7 @@ namespace BetterBeehouses
 			WildFlowers.Setup();
 			config.RegisterModConfigMenu(ModManifest);
 			PFM.Patch(harmony);
+			TapperFramework.Init();
 		}
 		public override object GetApi()
 			=> api;
