@@ -5,8 +5,9 @@ using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FastExpressionCompiler.LightExpression;
 using StardewValley.GameData;
+using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
 
 namespace BetterBeehouses
 {
@@ -101,6 +102,44 @@ namespace BetterBeehouses
 			if (i[^1] is ',')
 				i = i[..^1];
 			return s.Length is 0 ? item : s[^1] is ',' ? s + i : s + ',' + i;
+		}
+
+		internal static T SelectFrom<T>(this IList<T> items, Vector2 tile)
+		{
+			if (items.Count is 0)
+				throw new ArgumentException("List is empty! Cannot select");
+
+			try
+			{
+				var bytes = new uint[3];
+				var posData = MemoryMarshal.Cast<Vector2, uint>(MemoryMarshal.CreateReadOnlySpan(ref tile, 1));
+				posData.CopyTo(bytes);
+				bytes[2] = (uint)Game1.Date.TotalDays;
+
+				int index = (int)(RandomFrom(bytes) % (uint)items.Count);
+				return items[index];
+			}
+			catch
+			{
+				return items[0];
+			}
+		}
+
+		internal static uint RandomFrom(params uint[] data)
+		{
+			if (data.Length == 0)
+				return 0;
+
+			uint r = data[0];
+			for (int i = 1; i < data.Length; i++)
+			{
+				uint x = data[i];
+				uint t = x ^ (x << 11);
+
+				r = r^(r >> 19) ^ t^(t >> 8);
+			}
+
+			return r;
 		}
 	}
 }

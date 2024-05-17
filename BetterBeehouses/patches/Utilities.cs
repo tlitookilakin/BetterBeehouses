@@ -12,7 +12,6 @@ namespace BetterBeehouses.patches
 {
 	class Utilities
 	{
-		// TODO: use seeded random based on tilepos and day index for more reliable randoms
 		// TODO: bush bloom support
 		// TODO: custom bush support
 
@@ -31,7 +30,7 @@ namespace BetterBeehouses.patches
 			{
 				var items = GetAllNearFlowers(location, startTileLocation, range, additional_check).ToArray();
 				if (items.Length > 0)
-					__result = CropFromIndex(items[Game1.random.Next(items.Length)]);
+					__result = CropFromIndex(items.SelectFrom(startTileLocation));
 				else
 					__result = null;
 				return false;
@@ -64,48 +63,64 @@ namespace BetterBeehouses.patches
 				if (openList.Count <= 0)
 					yield break;
 				Vector2 currentTile = openList.Dequeue();
+
+				// giant crops
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
 					for (int i = 0; i < gc.harvest.Length; i++)
 						yield return new(gc.source, currentTile, gc.harvest[i]);
 				}
+
+				// wildflowers
 				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
 				{
 					yield return new(wilf);
 				}
-				else if (loc.terrainFeatures.TryGetValue(currentTile, out var tf))
-				{
-					if (tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) && IndexIsFlower(dirt.crop.indexOfHarvest.Value))
-						yield return new(dirt.crop);
-					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruit.Count is > 0)
-						foreach (var fruit in tree.fruit)
-							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
-								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree");
-				}
+
+				// objects on floor
 				else if (loc.objects.TryGetValue(currentTile, out StardewValley.Object obj))
 				{
-					if (obj is IndoorPot pot) //pot crop
+					// garden pot
+					if (obj is IndoorPot pot)
 					{
 						if (Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers))
 						{
+							// forage in pot
 							if (ModEntry.config.UseForageFlowers && pot.heldObject.Value is not null) //forage in pot
 							{
 								var ho = pot.heldObject.Value;
 								if (ho.CanBeGrabbed && IsFlower(ho))
 									yield return new(currentTile, ho.QualifiedItemId, "Forage") { InPot = true };
 							}
+
+							// crop in pot
 							Crop crop = pot.hoeDirt.Value?.crop;
 							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value) && (extraCheck is null || extraCheck(crop)))
 								yield return new(crop) { InPot = true, Tile = currentTile, SourceTile = currentTile }; //flower in pot
 						}
 					}
+					// forage on ground
 					else
 					{
 						if (ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && IsFlower(obj))
 							yield return new(currentTile, obj.QualifiedItemId, "Forage");
-						//non-pot forage
 					}
 				}
+
+				// trees & crops
+				else if (loc.terrainFeatures.TryGetValue(currentTile, out var tf))
+				{
+					// crop
+					if (tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) && IndexIsFlower(dirt.crop.indexOfHarvest.Value))
+						yield return new(dirt.crop);
+
+					// tree
+					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruit.Count is > 0)
+						foreach (var fruit in tree.fruit)
+							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
+								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree");
+				}
+
 				foreach (Vector2 v in Utility.getAdjacentTileLocations(currentTile))
 					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - tile.X) + Math.Abs(v.Y - tile.Y) <= range))
 						openList.Enqueue(v);

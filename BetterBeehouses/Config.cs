@@ -39,7 +39,7 @@ namespace BetterBeehouses
 		public int PathParticleCount { get; set; } = 5;
 		public bool AnythingHoney { get; set; } = false;
 
-		private ITranslationHelper i18n => ModEntry.helper.Translation;
+		private static ITranslationHelper i18n => ModEntry.helper.Translation;
 
 		public void ResetToDefault()
 		{
@@ -99,7 +99,6 @@ namespace BetterBeehouses
 			api.AddQuickLink("sources", manifest);
 			api.AddQuickLink("visual", manifest);
 			api.AddQuickLink("price", manifest);
-			api.AddQuickLink("integration", manifest);
 
 			//sources
 			api.AddPage(manifest, "sources", () => i18n.Get("config.sources.name"));
