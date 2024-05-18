@@ -34,7 +34,7 @@ namespace BetterBeehouses.integration
 
 			try
 			{
-				DoPatches(harmony, controller);
+				DoPatches(harmony);
 			}
 			catch (Exception ex)
 			{
@@ -45,8 +45,9 @@ namespace BetterBeehouses.integration
 			ModEntry.monitor.Log("Sucessfully applied all PFM patches.", LogLevel.Info);
 		}
 
-		private static void DoPatches(Harmony harmony, Type controller)
+		private static void DoPatches(Harmony harmony)
 		{
+			var controller = AccessTools.TypeByName("ProducerFrameworkMod.Controllers.ProducerRuleController");
 			harmony.Patch(
 				controller.GetMethod("SearchInput", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
 				prefix: new(typeof(PFM), nameof(InputSearch))

@@ -43,10 +43,12 @@ namespace BetterBeehouses.integration
 					return;
 
 				var data = asset.Data as dynamic;
-				var entries = data.Values as IEnumerable<KeyValuePair<string, dynamic>>;
 
-				foreach ((var key, var entry) in entries)
+				foreach (var pair in data)
 				{
+					string key = pair.Key;
+					var entry = pair.Value;
+
 					if (key is not "(BC)10" && !(ModEntry.config.ModifyCustomBeehouses &&
 					ItemContextTagManager.HasBaseTag(key, "bee_house")))
 						continue;
