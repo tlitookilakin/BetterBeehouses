@@ -43,7 +43,7 @@ namespace BetterBeehouses.framework
 		}
 		private static void EditData(MachineData data)
 		{
-			if (data.OutputRules.Count is 0)
+			if (data.OutputRules is null || data.OutputRules.Count is 0)
 				throw new AssetEditException("No output detected!");
 
 			foreach (var rule in data.OutputRules)
