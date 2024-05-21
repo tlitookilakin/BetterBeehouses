@@ -83,7 +83,7 @@ namespace BetterBeehouses.framework
 			data.ClearContentsOvernightCondition = produce switch
 			{
 				Config.ProduceWhere.Always => "FALSE",
-				Config.ProduceWhere.Indoors => data.ClearContentsOvernightCondition.ListAppend($" !{GetIndoorsQuery}"),
+				Config.ProduceWhere.Indoors => data.ClearContentsOvernightCondition.ListAppend($" !{GetIndoorsQuery()}"),
 				_ => data.ClearContentsOvernightCondition
 			};
 		}

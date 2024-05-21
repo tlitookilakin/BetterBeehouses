@@ -13,7 +13,7 @@ namespace BetterBeehouses.framework
 
 			foreach (var method in methods)
 				if (method.CreateDelegate<GameStateQueryDelegate>() is GameStateQueryDelegate query)
-					GameStateQuery.Register(nameof(method), query);
+					GameStateQuery.Register(method.Name, query);
 		}
 
 		public static bool LOCATION_IS_GREENHOUSE(string[] query, GameStateQueryContext context)
