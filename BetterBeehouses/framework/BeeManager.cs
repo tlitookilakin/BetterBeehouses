@@ -172,7 +172,7 @@ namespace BetterBeehouses.framework
 
 		private static void DrawParticles(SpriteBatch b)
 		{
-			if (!ModEntry.config.Particles || !ProducingHere())
+			if (!Config.config.Particles || !ProducingHere())
 				return;
 
 			var houses = bee_houses.Value;
@@ -224,7 +224,7 @@ namespace BetterBeehouses.framework
 		private static void DrawBees(SpriteBatch b)
 		{
 			var houses = bee_houses.Value;
-			if (houses.Count == 0 || !ModEntry.config.BeePaths || !ProducingHere())
+			if (houses.Count == 0 || !Config.config.BeePaths || !ProducingHere())
 				return;
 
 			var beev = bees.Value;
@@ -281,15 +281,21 @@ namespace BetterBeehouses.framework
 
 		private static Vector2 GetTarget(Vector2 source)
 		{
-			if (ModEntry.config.UseRandomFlower)
+			if (Config.config.UseRandomFlower)
 			{
-				var items = FlowerFinder.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).ToArray();
+				var items = FlowerFinder.GetAllNearFlowers(
+					Game1.currentLocation, FlowerFinder.DefaultSearch(source, Config.config.FlowerRange)
+				).ToArray();
+
 				if (items.Length > 0)
 					return items.SelectFrom(source).Tile;
 				else
 					return source;
 			}
-			var enumer = FlowerFinder.GetAllNearFlowers(Game1.currentLocation, source, ModEntry.config.FlowerRange).GetEnumerator();
+			var enumer = FlowerFinder.GetAllNearFlowers(
+				Game1.currentLocation, FlowerFinder.DefaultSearch(source, Config.config.FlowerRange)
+			).GetEnumerator();
+
 			if (enumer.MoveNext())
 				return enumer.Current.Tile;
 			return source;

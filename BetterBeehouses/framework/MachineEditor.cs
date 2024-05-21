@@ -22,7 +22,7 @@ namespace BetterBeehouses.framework
 			{
 				if (
 					ItemContextTagManager.HasBaseTag(key, "bee_house") &&
-					(key is "(BC)10" || ModEntry.config.ModifyCustomBeehouses)
+					(key is "(BC)10" || Config.config.ModifyCustomBeehouses)
 				)
 				{
 					var t = ItemContextTagManager.HasBaseTag(key, "bee_house");
@@ -35,6 +35,10 @@ namespace BetterBeehouses.framework
 					{
 						ModEntry.monitor.Log($"Could not edit beehouse machine '{key}': {ex.Message}", LogLevel.Warn);
 					}
+					catch (Exception ex)
+					{
+						ModEntry.monitor.Log($"An error occurred while editing machine data for '{key}': {ex}", LogLevel.Error);
+					}
 				}
 			}
 
@@ -44,7 +48,7 @@ namespace BetterBeehouses.framework
 		private static void EditData(MachineData data)
 		{
 			if (data.OutputRules is null || data.OutputRules.Count is 0)
-				throw new AssetEditException("No output detected!");
+				throw new AssetEditException("No outputs detected! Another mod is likely broken!");
 
 			foreach (var rule in data.OutputRules)
 				EditSeason(rule, data);
@@ -53,7 +57,7 @@ namespace BetterBeehouses.framework
 		}
 		private static void EditSeason(MachineOutputRule rule, MachineData data)
 		{
-			var produce = ModEntry.config.ProduceInWinter;
+			var produce = Config.config.ProduceInWinter;
 			var str = produce switch
 			{
 				Config.ProduceWhere.Always => "TRUE",
@@ -89,7 +93,7 @@ namespace BetterBeehouses.framework
 		}
 		public static string GetIndoorsQuery()
 		{
-			return ModEntry.config.UsableIn switch
+			return Config.config.UsableIn switch
 			{
 				Config.UsableOptions.Anywhere => "LOCATION_IS_INDOORS Target",
 				Config.UsableOptions.Greenhouse => "LOCATION_IS_GREENHOUSE Target",
@@ -99,7 +103,7 @@ namespace BetterBeehouses.framework
 		private static void EditSpeed(MachineData data)
 		{
 			foreach (var output in data.OutputRules)
-				output.DaysUntilReady = Math.Min(output.DaysUntilReady, ModEntry.config.DaysToProduce);
+				output.DaysUntilReady = Math.Min(output.DaysUntilReady, Config.config.DaysToProduce);
 		}
 	}
 }

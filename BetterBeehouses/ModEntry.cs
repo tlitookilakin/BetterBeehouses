@@ -18,7 +18,6 @@ namespace BetterBeehouses
 		internal static IModHelper helper;
 		internal static Harmony harmony;
 		internal static string ModID;
-		internal static Config config;
 		internal static API api;
 		internal static Texture2D BeeTex => beeTex ??= helper.GameContent.Load<Texture2D>("Mods/BetterBeehouses/Bees");
 		private static Texture2D beeTex;
@@ -31,7 +30,6 @@ namespace BetterBeehouses
 			ModEntry.helper = Helper;
 			harmony = new(ModManifest.UniqueID);
 			ModID = ModManifest.UniqueID;
-			config = helper.ReadConfig<Config>();
 			api = new();
 			helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 			helper.Events.Content.AssetRequested += AssetRequested;
@@ -44,9 +42,9 @@ namespace BetterBeehouses
 			Utilities.Init();
 			BeeManager.Init();
 			Machines.Patch(harmony);
-			config.Patch();
+			Config.config.Patch();
 			WildFlowers.Setup();
-			config.RegisterModConfigMenu(ModManifest);
+			Config.config.RegisterModConfigMenu(ModManifest);
 			PFM.Patch(harmony);
 			TapperFramework.Init();
 		}

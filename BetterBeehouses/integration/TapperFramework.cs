@@ -31,7 +31,7 @@ namespace BetterBeehouses.integration
 
 			e.Edit(static (asset) =>
 			{
-				var produce = ModEntry.config.ProduceInWinter;
+				var produce = Config.config.ProduceInWinter;
 				var str = produce switch
 				{
 					Config.ProduceWhere.Always => "TRUE",
@@ -49,7 +49,7 @@ namespace BetterBeehouses.integration
 					string key = pair.Key;
 					var entry = pair.Value;
 
-					if (key is not "(BC)10" && !(ModEntry.config.ModifyCustomBeehouses &&
+					if (key is not "(BC)10" && !(Config.config.ModifyCustomBeehouses &&
 					ItemContextTagManager.HasBaseTag(key, "bee_house")))
 						continue;
 

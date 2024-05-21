@@ -1,43 +1,48 @@
 ﻿using StardewModdingAPI;
+using StardewValley;
 using System;
+using xTile.Dimensions;
 
 namespace BetterBeehouses.framework
 {
     class Config
     {
+        public static Config config => inst ??= ModEntry.helper.ReadConfig<Config>();
+        private static Config inst;
+
         internal enum UsableOptions { Outdoors, Greenhouse, Anywhere }
         internal enum ProduceWhere { Never, Indoors, Always }
-        public ProduceWhere ProduceInWinter { get; set; } = ProduceWhere.Indoors;
-        public ProduceWhere UsePottedFlowers { get; set; } = ProduceWhere.Always;
-        public UsableOptions UsableIn { get; set; } = UsableOptions.Greenhouse;
-        public int DaysToProduce { get; set; } = 4;
-        public int FlowerRange { get; set; } = 5;
-        public bool UseForageFlowers { get; set; } = false;
-        public float ValueMultiplier { get; set; } = 1f;
-        public bool Particles { get; set; } = true;
-        public bool UseQuality { get; set; } = false;
+        public ProduceWhere ProduceInWinter { get; set; }
+        public ProduceWhere UsePottedFlowers { get; set; }
+        public UsableOptions UsableIn { get; set; }
+        public int DaysToProduce { get; set; }
+        public int FlowerRange { get; set; }
+        public bool UseForageFlowers { get; set; }
+        public float ValueMultiplier { get; set; }
+        public bool Particles { get; set; }
+        public bool UseQuality { get; set; }
         private float bearBoost = 1f;
         public float BearBoost
         {
             get { return bearBoost; }
             set { bearBoost = Math.Clamp(value, 1f, 3f); }
         }
-        public bool UseGiantCrops { get; set; } = true;
-        public bool UseFruitTrees { get; set; } = true;
-        public bool UseRandomFlower { get; set; } = false;
-        public bool UseFlowerBoost { get; set; } = false;
+        public bool UseGiantCrops { get; set; }
+        public bool UseFruitTrees { get; set; }
+        public bool UseRandomFlower { get; set; }
+        public bool UseFlowerBoost { get; set; }
         public int FlowersPerBoost
         {
             get => flowerBoost;
             set => flowerBoost = Math.Max(value, 1);
         }
         private int flowerBoost = 2;
-        public bool UseAnyFruitTrees { set; get; } = false;
-        public bool BeePaths { set; get; } = true;
-        public int PathParticleCount { get; set; } = 5;
-        public bool AnythingHoney { get; set; } = false;
-        public bool UseBushes { get; set; } = true;
-        public bool ModifyCustomBeehouses { get; set; } = true;
+        public bool UseAnyFruitTrees { set; get; }
+        public bool BeePaths { set; get; }
+        public int PathParticleCount { get; set; }
+        public bool AnythingHoney { get; set; }
+        public bool UseBushes { get; set; }
+        public bool ModifyCustomBeehouses { get; set; }
 
         private static ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -126,5 +131,10 @@ namespace BetterBeehouses.framework
         {
             ResetToDefault();
         }
-    }
+
+        public bool UsingFlowerRules(GameLocation where)
+            => UseFruitTrees || UseGiantCrops || UseForageFlowers || UseBushes || AnythingHoney || 
+            Utils.GetProduceHere(where, UsePottedFlowers);
+
+	}
 }

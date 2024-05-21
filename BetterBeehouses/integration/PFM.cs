@@ -62,9 +62,9 @@ namespace BetterBeehouses.integration
 
 			int range = inputSearchConfig.Range;
 
-			if (ModEntry.config.UseRandomFlower)
+			if (Config.config.UseRandomFlower)
 			{
-				var items = FlowerFinder.GetAllNearFlowers(location, startTileLocation, range)
+				var items = FlowerFinder.GetAllNearFlowers(location, FlowerFinder.DefaultSearch(startTileLocation, range))
 					.Where(static f => !f.ID.StartsWith('(') || f.ID.StartsWith("(O)") || f.ID.StartsWith("(BC)"))
 					.ToArray();
 
@@ -74,11 +74,11 @@ namespace BetterBeehouses.integration
 					__result = null;
 				return false;
 			}
-			else if (ModEntry.config.UseFruitTrees || ModEntry.config.UseGiantCrops ||
-				ModEntry.config.UseForageFlowers || Utils.GetProduceHere(location, ModEntry.config.UsePottedFlowers))
+			else if (Config.config.UseFruitTrees || Config.config.UseGiantCrops ||
+				Config.config.UseForageFlowers || Utils.GetProduceHere(location, Config.config.UsePottedFlowers))
 			{
 				__result = ItemRegistry.Create<StardewValley.Object>(
-					FlowerFinder.GetAllNearFlowers(location, startTileLocation, range)
+					FlowerFinder.GetAllNearFlowers(location, FlowerFinder.DefaultSearch(startTileLocation, range))
 					.Where(static f => !f.ID.StartsWith('(') || f.ID.StartsWith("(O)") || f.ID.StartsWith("(BC)"))
 					.FirstOrDefault()
 					.ID);

@@ -7,6 +7,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<EnableHarmony>true</EnableHarmony>
 		<BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
+		<LangVersion>Latest</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>

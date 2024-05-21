@@ -30,7 +30,7 @@ namespace BetterBeehouses.patches
 
 			// not running, and not a beehouse
 			if (__instance.QualifiedItemId is not "(BC)10" &&
-				!ModEntry.config.ModifyCustomBeehouses ||
+				!Config.config.ModifyCustomBeehouses ||
 				!__instance.HasContextTag("bee_house"))
 				return false;
 
@@ -39,14 +39,14 @@ namespace BetterBeehouses.patches
 				return false;
 
 			return
-				(where.GetSeason() is not Season.Winter || ModEntry.config.ProduceInWinter switch
+				(where.GetSeason() is not Season.Winter || Config.config.ProduceInWinter switch
 				{
 					Config.ProduceWhere.Never => false,
 					Config.ProduceWhere.Always => true,
 					Config.ProduceWhere.Indoors => !where.IsOutdoors,
 					_ => false
 				})
-				&& ModEntry.config.UsableIn switch
+				&& Config.config.UsableIn switch
 				{
 					Config.UsableOptions.Anywhere => true,
 					Config.UsableOptions.Greenhouse => where.IsGreenhouse,
@@ -64,16 +64,16 @@ namespace BetterBeehouses.patches
 			result.Quality = GetQuality(who, result.Quality);
 
 			if (result is SObject obj)
-				obj.Price = (int)(obj.Price * ModEntry.config.ValueMultiplier + .5f);
+				obj.Price = (int)(obj.Price * Config.config.ValueMultiplier + .5f);
 
 			var where = machine.Location;
 			if (where is null)
 				return result;
 
-			if (ModEntry.config.UseFlowerBoost)
+			if (Config.config.UseFlowerBoost)
 				result.Stack += Math.Max(
-					FlowerFinder.GetAllNearFlowers(where, machine.TileLocation, ModEntry.config.FlowerRange).Count()
-					- 1, 0) / ModEntry.config.FlowersPerBoost;
+					FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(machine.TileLocation, Config.config.FlowerRange)).Count()
+					- 1, 0) / Config.config.FlowersPerBoost;
 
 			return result;
 		}
@@ -81,10 +81,10 @@ namespace BetterBeehouses.patches
 		public static int GetQuality(Farmer who, int original)
 		{
 			//based on Crop.harvest()
-			if (!ModEntry.config.UseQuality)
+			if (!Config.config.UseQuality)
 				return original;
 
-			float boost = who is not null && who.eventsSeen.Contains("2120303") ? ModEntry.config.BearBoost : 1f;
+			float boost = who is not null && who.eventsSeen.Contains("2120303") ? Config.config.BearBoost : 1f;
 
 			double chanceForGoldQuality = 0.2 * (who?.FarmingLevel ?? 0.0 / 10.0) + 0.2 * boost * ((who?.FarmingLevel ?? 0.0 + 2.0) / 12.0) + 0.01;
 			double chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);

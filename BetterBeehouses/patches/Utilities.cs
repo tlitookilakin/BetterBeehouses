@@ -19,19 +19,23 @@ namespace BetterBeehouses.patches
 
 		internal static bool preCheck(GameLocation location, Vector2 startTileLocation, int range, Func<Crop, bool> additional_check, ref Crop __result)
 		{
-			if (ModEntry.config.UseRandomFlower)
+			if (Config.config.UseRandomFlower)
 			{
-				var items = FlowerFinder.GetAllNearFlowers(location, startTileLocation, range, additional_check).ToArray();
+				var items = FlowerFinder.GetAllNearFlowers(
+					location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
+				).ToArray();
+
 				if (items.Length > 0)
 					__result = CropFromIndex(items.SelectFrom(startTileLocation));
 				else
 					__result = null;
 				return false;
 			}
-			else if (ModEntry.config.UseFruitTrees || ModEntry.config.UseGiantCrops ||
-				ModEntry.config.UseForageFlowers || Utils.GetProduceHere(location, ModEntry.config.UsePottedFlowers))
+			else if (Config.config.UsingFlowerRules(location))
 			{
-				__result = CropFromIndex(FlowerFinder.GetAllNearFlowers(location, startTileLocation, range, additional_check).FirstOrDefault());
+				__result = CropFromIndex(
+					FlowerFinder.GetAllNearFlowers(location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
+				).FirstOrDefault());
 				return false;
 			}
 			return true;

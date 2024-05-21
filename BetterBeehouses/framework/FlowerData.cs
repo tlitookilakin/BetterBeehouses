@@ -4,23 +4,18 @@ using StardewValley.TerrainFeatures;
 
 namespace BetterBeehouses.framework
 {
-	public struct FlowerData
+	public readonly record struct FlowerData
 	{
-		public string ID;
-		public Vector2 Tile;
-		public Crop crop;
-		public Vector2 SourceTile;
-		public string type;
-		public bool InPot;
+		public readonly string ID;
+		public readonly Vector2 Tile;
+		public readonly Crop crop;
+		public readonly Vector2 SourceTile;
+		public readonly string type;
+		public readonly bool InPot;
 
-		public FlowerData()
+		public FlowerData(string id, Vector2 tile, Vector2 sourceTile, string type, bool inPot)
 		{
-			ID = "";
-			Tile = default;
-			crop = null;
-			SourceTile = default;
-			type = null;
-			InPot = false;
+			ID = id; Tile = tile; SourceTile = sourceTile; this.type = type; InPot = inPot;
 		}
 
 		public FlowerData(Crop crop)
@@ -28,19 +23,29 @@ namespace BetterBeehouses.framework
 			this.crop = crop;
 			ID = crop.indexOfHarvest.Value;
 			Tile = crop.tilePosition;
-			type = null;
+			type = "Crop";
 			SourceTile = Tile;
 			InPot = false;
 		}
 
-		public FlowerData(Vector2 pos, string id, string type)
+		public FlowerData(Crop crop, Vector2 tile)
+		{
+			this.crop = crop;
+			ID = crop.indexOfHarvest.Value;
+			Tile = tile;
+			type = "Crop";
+			SourceTile = Tile;
+			InPot = true;
+		}
+
+		public FlowerData(Vector2 pos, string id, string type, bool inPot)
 		{
 			ID = id;
 			Tile = pos;
 			crop = null;
 			this.type = type;
 			SourceTile = Tile;
-			InPot = false;
+			InPot = inPot;
 		}
 
 		public FlowerData(GiantCrop giant, Vector2 pos, string id)

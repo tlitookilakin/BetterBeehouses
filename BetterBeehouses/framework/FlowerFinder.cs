@@ -10,27 +10,20 @@ namespace BetterBeehouses.framework
 {
 	public static class FlowerFinder
 	{
-		public static IEnumerable<FlowerData> GetAllNearFlowers(GameLocation loc, Vector2 tile, int range, Func<Crop, bool> extraCheck = null)
+		public static IEnumerable<FlowerData> GetAllNearFlowers(GameLocation loc, IEnumerable<Vector2> tiles, Func<Crop, bool> extraCheck = null)
 		{
 			var GiantCrops = new Dictionary<Vector2, (string[] harvest, GiantCrop source)>();
-			if (ModEntry.config.UseGiantCrops)
+			if (Config.config.UseGiantCrops)
 				foreach (var clump in loc.resourceClumps)
 					if (clump is GiantCrop giant && GiantFlower(giant, out var harvest, loc))
 						for (int x = 0; x < giant.width.Value; x++)
 							for (int y = 0; y < giant.height.Value; y++)
-								if (Math.Abs(giant.Tile.X + x - tile.X) + Math.Abs(giant.Tile.Y + y - tile.Y) <= range)
 									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), (harvest, giant));
 
 			var wildflowers = WildFlowers.GetData(loc);
-			Queue<Vector2> openList = new();
-			HashSet<Vector2> closedList = new();
-			openList.Enqueue(tile);
-			for (int attempts = 0; range >= 0 || range < 0 && attempts <= 150; attempts++)
-			{
-				if (openList.Count <= 0)
-					yield break;
-				Vector2 currentTile = openList.Dequeue();
 
+			foreach (var currentTile in tiles)
+			{
 				// giant crops
 				if (GiantCrops.TryGetValue(currentTile, out var gc))
 				{
@@ -50,27 +43,35 @@ namespace BetterBeehouses.framework
 					// garden pot
 					if (obj is IndoorPot pot)
 					{
-						if (Utils.GetProduceHere(loc, ModEntry.config.UsePottedFlowers))
+						if (Utils.GetProduceHere(loc, Config.config.UsePottedFlowers))
 						{
 							// forage in pot
-							if (ModEntry.config.UseForageFlowers && pot.heldObject.Value is not null) //forage in pot
+							if (Config.config.UseForageFlowers && pot.heldObject.Value is not null) //forage in pot
 							{
 								var ho = pot.heldObject.Value;
 								if (ho.CanBeGrabbed && IsFlower(ho))
-									yield return new(currentTile, ho.QualifiedItemId, "Forage") { InPot = true };
+									yield return new(currentTile, ho.QualifiedItemId, "Forage", true);
 							}
 
 							// crop in pot
 							Crop crop = pot.hoeDirt.Value?.crop;
 							if (IsGrown(crop, extraCheck) && IndexIsFlower(crop.indexOfHarvest.Value) && (extraCheck is null || extraCheck(crop)))
-								yield return new(crop) { InPot = true, Tile = currentTile, SourceTile = currentTile }; //flower in pot
+								yield return new(crop, currentTile); //flower in pot
+
+							// bush in pot
+							if (Config.config.UseBushes && pot.bush.Value is Bush bush)
+							{
+								var shake = bush.GetShakeOffItem();
+								if (IndexIsFlower(shake))
+									yield return new(currentTile, shake, "Bush", true);
+							}
 						}
 					}
 					// forage on ground
 					else
 					{
-						if (ModEntry.config.UseForageFlowers && obj.CanBeGrabbed && IsFlower(obj))
-							yield return new(currentTile, obj.QualifiedItemId, "Forage");
+						if (Config.config.UseForageFlowers && obj.CanBeGrabbed && IsFlower(obj))
+							yield return new(currentTile, obj.QualifiedItemId, "Forage", false);
 					}
 				}
 
@@ -82,14 +83,14 @@ namespace BetterBeehouses.framework
 						yield return new(dirt.crop);
 
 					// tree
-					else if (tf is FruitTree tree && ModEntry.config.UseFruitTrees && tree.fruit.Count is > 0)
+					else if (tf is FruitTree tree && Config.config.UseFruitTrees && tree.fruit.Count is > 0)
 						foreach (var fruit in tree.fruit)
-							if (ModEntry.config.UseAnyFruitTrees || IsFlower(fruit))
-								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree");
+							if (Config.config.UseAnyFruitTrees || IsFlower(fruit))
+								yield return new(currentTile, fruit.QualifiedItemId, "FruitTree", false);
 				}
 
 				// bushes
-				if (ModEntry.config.UseBushes)
+				if (Config.config.UseBushes)
 				{
 					for (int i = 0; i < 3; i++)
 					{
@@ -99,17 +100,30 @@ namespace BetterBeehouses.framework
 						{
 							var item = bush.GetShakeOffItem();
 							if (IndexIsFlower(item))
-								yield return new(currentTile, item, "Bush") { SourceTile = targ };
+								yield return new(item, currentTile, targ, "Bush", false);
 						}
 					}
 				}
-
-				foreach (Vector2 v in Utility.getAdjacentTileLocations(currentTile))
-					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - tile.X) + Math.Abs(v.Y - tile.Y) <= range))
-						openList.Enqueue(v);
-				closedList.Add(currentTile);
 			}
 		}
+
+		public static IEnumerable<Vector2> DefaultSearch(Vector2 source, int range)
+		{
+			Queue<Vector2> openList = new();
+			HashSet<Vector2> closedList = new();
+			openList.Enqueue(source);
+
+			while(openList.TryDequeue(out var tile))
+			{
+				yield return tile;
+
+				foreach (Vector2 v in Utility.getAdjacentTileLocations(tile))
+					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - tile.X) + Math.Abs(v.Y - tile.Y) <= range))
+						openList.Enqueue(v);
+				closedList.Add(tile);
+			}
+		}
+
 		private static bool IsGrown(Crop crop, Func<Crop, bool> extraCheck = null)
 		{
 			if (crop is not null && !crop.dead.Value &&
@@ -121,11 +135,11 @@ namespace BetterBeehouses.framework
 			return false;
 		}
 		private static bool IsFlower(Item item)
-			=> item.Category is -80 || item.HasContextTag("honey_source");
+			=> Config.config.AnythingHoney || item.Category is -80 || item.HasContextTag("honey_source");
 
 		private static bool GiantFlower(GiantCrop giant, out string[] harvest, GameLocation location)
 		{
-			harvest = Array.Empty<string>();
+			harvest = [];
 
 			var data = giant.GetData();
 			if (data is null || data.HarvestItems.Count is 0)
@@ -144,7 +158,7 @@ namespace BetterBeehouses.framework
 		{
 			if (!ItemRegistry.Exists(index))
 				return false;
-			if (ModEntry.config.AnythingHoney)
+			if (Config.config.AnythingHoney)
 				return true;
 
 			return ItemRegistry.GetData(index).Category == -80 ||

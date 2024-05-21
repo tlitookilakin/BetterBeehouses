@@ -28,5 +28,13 @@ namespace BetterBeehouses
 		/// <param name="predicate">A filter</param>
 		/// <returns>A sequence of pairs- the key is the position it was found at, and the value is the ID of the item</returns>
 		public IEnumerable<KeyValuePair<Vector2, string>> GetAllHoneySourcesInRange(GameLocation where, Vector2 tile, int range = -1, Func<Crop, bool> predicate = null);
+
+		/// <summary>
+		/// Get honey source data for a set of tiles
+		/// </summary>
+		/// <param name="where">The location to search in</param>
+		/// <param name="tiles">The set of tiles to search</param>
+		/// <returns>The raw data found.</returns>
+		public IEnumerable<object> GetAllHoneySources(GameLocation where, IEnumerable<Vector2> tiles);
 	}
 }
