@@ -20,14 +20,36 @@ namespace BetterBeehouses
 				range = Config.config.FlowerRange;
 
 			return FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(tile, range), predicate).Select(
-				(f, i) => new KeyValuePair<Vector2, string>(f.Tile, f.ID)
+				f => new KeyValuePair<Vector2, string>(f.Tile, f.ID)
 			);
 		}
+
+		public string GetConditionString()
+			=> Config.config.ProduceInWinter switch
+			{
+				Config.ProduceWhere.Always => "TRUE",
+				Config.ProduceWhere.Indoors => $"ANY \"!LOCATION_SEASON Target Winter\" \"{MachineEditor.GetIndoorsQuery()}\"",
+				Config.ProduceWhere.Never => "!LOCATION_SEASON Target Winter",
+				_ => null
+			};
+
+		public IEnumerable<object> GetRawHoneySources(GameLocation where, IEnumerable<Vector2> tiles)
+			=> FlowerFinder.GetAllNearFlowers(where, tiles).Select(f => f as object);
 
 		public int GetSearchRadius()
 			=> Config.config.FlowerRange;
 
 		public float GetValueMultiplier()
 			=> Config.config.ValueMultiplier;
+
+		public bool UsingAnythingHoney()
+			=> Config.config.AnythingHoney;
+
+		IEnumerable<KeyValuePair<Vector2, string>> IBetterBeehousesAPI.GetAllHoneySources(GameLocation where, IEnumerable<Vector2> tiles)
+		{
+			return FlowerFinder.GetAllNearFlowers(where, tiles).Select(
+				f => new KeyValuePair<Vector2, string>(f.Tile, f.ID)
+			);
+		}
 	}
 }

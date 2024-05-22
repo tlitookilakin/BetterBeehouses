@@ -97,7 +97,7 @@ namespace BetterBeehouses.framework
 			{
 				Config.UsableOptions.Anywhere => "LOCATION_IS_INDOORS Target",
 				Config.UsableOptions.Greenhouse => "LOCATION_IS_GREENHOUSE Target",
-				_ => "TRUE"
+				_ => "FALSE"
 			};
 		}
 		private static void EditSpeed(MachineData data)

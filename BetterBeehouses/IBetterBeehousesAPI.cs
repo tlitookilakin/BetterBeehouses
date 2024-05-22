@@ -7,17 +7,17 @@ namespace BetterBeehouses
 {
 	public interface IBetterBeehousesAPI
 	{
-		/// <summary>
-		/// Return the distance bees will search for flowers
-		/// </summary>
-		/// <returns>Tile Radius</returns>
+		/// <returns>The distance bees will search for flowers</returns>
 		public int GetSearchRadius();
 
-		/// <summary>
-		/// Returns the value multiplier for honey from bee houses
-		/// </summary>
-		/// <returns>Multiplier</returns>
+		/// <returns>The value multiplier for honey from bee houses</returns>
 		public float GetValueMultiplier();
+
+		/// <returns>Whether or not anything can be used as a honey flavor</returns>
+		public bool UsingAnythingHoney();
+
+		/// <returns>The GSQ condition for beehouse machine operation, based on config options</returns>
+		public string GetConditionString();
 
 		/// <summary>
 		/// Finds nearby honey sources recognized by this mod
@@ -30,11 +30,19 @@ namespace BetterBeehouses
 		public IEnumerable<KeyValuePair<Vector2, string>> GetAllHoneySourcesInRange(GameLocation where, Vector2 tile, int range = -1, Func<Crop, bool> predicate = null);
 
 		/// <summary>
-		/// Get honey source data for a set of tiles
+		/// Get honey IDs for a set of tiles. Order of input tiles determines search order.
+		/// </summary>
+		/// <param name="where">The location to search in</param>
+		/// <param name="tiles">The set of tiles to search</param>
+		/// <returns>The item IDs of the found items and their tile locations</returns>
+		public IEnumerable<KeyValuePair<Vector2, string>> GetAllHoneySources(GameLocation where, IEnumerable<Vector2> tiles);
+
+		/// <summary>
+		/// Get raw honey source data for a set of tiles. Order of input tiles determines search order.
 		/// </summary>
 		/// <param name="where">The location to search in</param>
 		/// <param name="tiles">The set of tiles to search</param>
 		/// <returns>The raw data found.</returns>
-		public IEnumerable<object> GetAllHoneySources(GameLocation where, IEnumerable<Vector2> tiles);
+		public IEnumerable<object> GetRawHoneySources(GameLocation where, IEnumerable<Vector2> tiles);
 	}
 }

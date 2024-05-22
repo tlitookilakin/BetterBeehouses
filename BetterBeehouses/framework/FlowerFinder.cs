@@ -118,7 +118,7 @@ namespace BetterBeehouses.framework
 				yield return tile;
 
 				foreach (Vector2 v in Utility.getAdjacentTileLocations(tile))
-					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - tile.X) + Math.Abs(v.Y - tile.Y) <= range))
+					if (!closedList.Contains(v) && !openList.Contains(v) && (range < 0 || Math.Abs(v.X - source.X) + Math.Abs(v.Y - source.Y) <= range))
 						openList.Enqueue(v);
 				closedList.Add(tile);
 			}
