@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<AssemblyName>BetterBeehouses</AssemblyName>
 		<RootNamespace>BetterBeehouses</RootNamespace>
-		<Version>2.1.0</Version>
+		<Version>2.1.1</Version>
 		<TargetFramework>net6.0</TargetFramework>
 		<EnableHarmony>true</EnableHarmony>
 		<BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
