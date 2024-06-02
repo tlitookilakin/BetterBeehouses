@@ -72,7 +72,7 @@ namespace BetterBeehouses.patches
 
 			if (Config.config.UseFlowerBoost)
 				result.Stack += Math.Max(
-					FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(machine.TileLocation, Config.config.FlowerRange)).Count()
+					FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(machine.TileLocation)).Count()
 					- 1, 0) / Config.config.FlowersPerBoost;
 
 			return result;

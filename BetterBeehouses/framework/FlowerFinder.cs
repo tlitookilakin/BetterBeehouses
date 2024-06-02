@@ -107,8 +107,11 @@ namespace BetterBeehouses.framework
 			}
 		}
 
-		public static IEnumerable<Vector2> DefaultSearch(Vector2 source, int range)
+		public static IEnumerable<Vector2> DefaultSearch(Vector2 source, int range = -1)
 		{
+			if (range < 0)
+				range = Config.config.FlowerRange;
+
 			Queue<Vector2> openList = new();
 			HashSet<Vector2> closedList = new();
 			openList.Enqueue(source);

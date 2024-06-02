@@ -1,4 +1,5 @@
 ﻿using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using System;
 using xTile.Dimensions;
@@ -43,6 +44,7 @@ namespace BetterBeehouses.framework
         public bool AnythingHoney { get; set; }
         public bool UseBushes { get; set; }
         public bool ModifyCustomBeehouses { get; set; }
+        public KeybindList DebugKey {  get; set; }
 
         private static ITranslationHelper i18n => ModEntry.helper.Translation;
 
@@ -69,6 +71,7 @@ namespace BetterBeehouses.framework
             AnythingHoney = false;
             UseBushes = true;
             ModifyCustomBeehouses = true;
+            DebugKey = new(SButton.F9);
         }
 
         public void ApplyConfig()

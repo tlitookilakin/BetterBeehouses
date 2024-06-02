@@ -17,8 +17,11 @@ namespace BetterBeehouses.patches
 			);
 		}
 
-		internal static bool preCheck(GameLocation location, Vector2 startTileLocation, int range, Func<Crop, bool> additional_check, ref Crop __result)
+		internal static bool preCheck(GameLocation location, Vector2 startTileLocation, 
+			ref int range, Func<Crop, bool> additional_check, ref Crop __result)
 		{
+			range = Math.Max(range, Config.config.FlowerRange);
+
 			if (Config.config.UseRandomFlower)
 			{
 				if (ModEntry.monitor.IsVerbose)

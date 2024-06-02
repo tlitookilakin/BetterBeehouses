@@ -141,5 +141,11 @@ namespace BetterBeehouses.framework
 
             return r;
         }
+
+        internal static Point LocalToGlobal(this Point local)
+        {
+            var viewpos = Game1.viewport.Location;
+            return new(local.X + viewpos.X, local.Y + viewpos.Y);
+        }
     }
 }

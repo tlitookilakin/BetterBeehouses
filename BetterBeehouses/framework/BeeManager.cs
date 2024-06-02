@@ -284,7 +284,7 @@ namespace BetterBeehouses.framework
 			if (Config.config.UseRandomFlower)
 			{
 				var items = FlowerFinder.GetAllNearFlowers(
-					Game1.currentLocation, FlowerFinder.DefaultSearch(source, Config.config.FlowerRange)
+					Game1.currentLocation, FlowerFinder.DefaultSearch(source)
 				).ToArray();
 
 				if (items.Length > 0)
@@ -293,7 +293,7 @@ namespace BetterBeehouses.framework
 					return source;
 			}
 			var enumer = FlowerFinder.GetAllNearFlowers(
-				Game1.currentLocation, FlowerFinder.DefaultSearch(source, Config.config.FlowerRange)
+				Game1.currentLocation, FlowerFinder.DefaultSearch(source)
 			).GetEnumerator();
 
 			if (enumer.MoveNext())

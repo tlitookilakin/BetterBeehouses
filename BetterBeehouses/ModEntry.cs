@@ -47,6 +47,7 @@ namespace BetterBeehouses
 			Config.config.RegisterModConfigMenu(ModManifest);
 			PFM.Patch(harmony);
 			TapperFramework.Init();
+			Overlay.Init(Helper);
 		}
 		public override object GetApi()
 			=> api;
