@@ -3,12 +3,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.GameData;
-using StardewValley.GameData.WildTrees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterBeehouses.integration
 {
@@ -53,9 +50,16 @@ namespace BetterBeehouses.integration
 					ItemContextTagManager.HasBaseTag(key, "bee_house")))
 						continue;
 
-					var rules = 
-					(entry.FruitTreeOutputRules as IEnumerable<GenericSpawnItemDataWithCondition>)
-					.Concat(entry.TreeOutputRules as IEnumerable<GenericSpawnItemDataWithCondition>);
+					var fruitRules = entry.FruitTreeOutputRules as IEnumerable<GenericSpawnItemDataWithCondition>;
+					var wildRules = entry.TreeOutputRules as IEnumerable<GenericSpawnItemDataWithCondition>;
+
+					var rules =
+						fruitRules is null ? wildRules :
+						wildRules is null ? fruitRules :
+						fruitRules.Concat(wildRules);
+
+					if (rules is null)
+						continue;
 
 					foreach (var rule in rules)
 						rule.Condition = rule.Condition.Replace("!LOCATION_SEASON Target Winter", str, StringComparison.OrdinalIgnoreCase);

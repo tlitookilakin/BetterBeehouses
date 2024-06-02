@@ -21,6 +21,9 @@ namespace BetterBeehouses.patches
 		{
 			if (Config.config.UseRandomFlower)
 			{
+				if (ModEntry.monitor.IsVerbose)
+					ModEntry.monitor.Log($"Beginning search for flowers @ [{startTileLocation.X}, {startTileLocation.Y}] in {location.DisplayName}");
+
 				var items = FlowerFinder.GetAllNearFlowers(
 					location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
 				).ToArray();
@@ -33,6 +36,9 @@ namespace BetterBeehouses.patches
 			}
 			else if (Config.config.UsingFlowerRules(location))
 			{
+				if (ModEntry.monitor.IsVerbose)
+					ModEntry.monitor.Log($"Beginning search for flowers @ [{startTileLocation.X}, {startTileLocation.Y}] in {location.DisplayName}");
+
 				__result = CropFromIndex(
 					FlowerFinder.GetAllNearFlowers(location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
 				).FirstOrDefault());
