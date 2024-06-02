@@ -8,6 +8,7 @@ using System.Reflection;
 using StardewValley.GameData;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI.Utilities;
 
 namespace BetterBeehouses.framework
 {
@@ -42,6 +43,17 @@ namespace BetterBeehouses.framework
             api.AddBoolOption(manifest,
                 p.GetGetMethod().CreateDelegate<Func<bool>>(inst),
                 p.GetSetMethod().CreateDelegate<Action<bool>>(inst),
+                () => ModEntry.i18n.Get($"config.{cfname}.name"),
+                () => ModEntry.i18n.Get($"config.{cfname}.desc")
+            );
+        }
+        internal static void AddQuickBind(this IGMCMAPI api, object inst, IManifest manifest, string prop)
+        {
+            var p = inst.GetType().GetProperty(prop);
+            var cfname = prop.Decap();
+            api.AddKeybindList(manifest,
+                p.GetGetMethod().CreateDelegate<Func<KeybindList>>(inst),
+                p.GetSetMethod().CreateDelegate<Action<KeybindList>>(inst),
                 () => ModEntry.i18n.Get($"config.{cfname}.name"),
                 () => ModEntry.i18n.Get($"config.{cfname}.desc")
             );

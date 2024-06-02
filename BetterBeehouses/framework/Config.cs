@@ -125,6 +125,7 @@ namespace BetterBeehouses.framework
             api.AddQuickBool(this, manifest, nameof(BeePaths));
             api.AddQuickBool(this, manifest, nameof(Particles));
             api.AddQuickInt(this, manifest, nameof(PathParticleCount), 0, 20);
+            api.AddQuickBind(this, manifest, nameof(DebugKey));
 
             //price balancing
             api.AddPage(manifest, "price", () => i18n.Get("config.price.name"));
