@@ -17,7 +17,6 @@ namespace BetterBeehouses.framework
 		public FlowerData(string id, Vector2 tile, Vector2 sourceTile, string type, bool inPot)
 		{
 			ID = id; Tile = tile; SourceTile = sourceTile; this.type = type; InPot = inPot;
-			Print();
 		}
 
 		public FlowerData(Crop crop)
@@ -28,7 +27,6 @@ namespace BetterBeehouses.framework
 			type = "Crop";
 			SourceTile = Tile;
 			InPot = false;
-			Print();
 		}
 
 		public FlowerData(Crop crop, Vector2 tile)
@@ -39,7 +37,6 @@ namespace BetterBeehouses.framework
 			type = "Crop";
 			SourceTile = Tile;
 			InPot = true;
-			Print();
 		}
 
 		public FlowerData(Vector2 pos, string id, string type, bool inPot)
@@ -50,7 +47,6 @@ namespace BetterBeehouses.framework
 			this.type = type;
 			SourceTile = Tile;
 			InPot = inPot;
-			Print();
 		}
 
 		public FlowerData(GiantCrop giant, Vector2 pos, string id)
@@ -61,13 +57,6 @@ namespace BetterBeehouses.framework
 			type = "GiantCrop";
 			crop = null;
 			InPot = false;
-			Print();
-		}
-
-		private void Print()
-		{
-			if (ModEntry.monitor.IsVerbose)
-				ModEntry.monitor.Log($"Source:\t{SourceTile.X}\t{SourceTile.Y}\tTile:\t{Tile.X}\t{Tile.Y}\tPot: {InPot}\tType:\t{type}\tID:\t{ID}");
 		}
 	}
 }

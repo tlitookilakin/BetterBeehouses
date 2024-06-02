@@ -12,9 +12,6 @@ namespace BetterBeehouses.framework
 	{
 		public static IEnumerable<FlowerData> GetAllNearFlowers(GameLocation loc, IEnumerable<Vector2> tiles, Func<Crop, bool> extraCheck = null)
 		{
-			if (ModEntry.monitor.IsVerbose)
-				ModEntry.monitor.Log($"Search start...");
-
 			var GiantCrops = new Dictionary<Vector2, (string[] harvest, GiantCrop source)>();
 			if (Config.config.UseGiantCrops)
 				foreach (var clump in loc.resourceClumps)
