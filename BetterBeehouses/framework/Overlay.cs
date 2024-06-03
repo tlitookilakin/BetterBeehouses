@@ -55,8 +55,11 @@ namespace BetterBeehouses.framework
 						Game1.tileSize, Game1.tileSize
 					);
 
+				var item = ItemRegistry.GetDataOrErrorItem(data.ID);
+
 				b.Draw(Game1.staminaRect, localTile, Color.Black * .2f);
 				b.Draw(Game1.staminaRect, localTile, tint);
+				b.Draw(item.GetTexture(), localTile, item.GetSourceRect(), Color.White);
 			}
 		}
 	}

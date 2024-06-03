@@ -5,6 +5,7 @@ using StardewValley;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using StardewValley.Extensions;
 
 namespace BetterBeehouses.framework
 {
@@ -138,7 +139,9 @@ namespace BetterBeehouses.framework
 			return false;
 		}
 		private static bool IsFlower(Item item)
-			=> Config.config.AnythingHoney || item.Category is -80 || item.HasContextTag("honey_source");
+			=> 
+				!(item.HasTypeBigCraftable() || item.Category == -999) && 
+				(Config.config.AnythingHoney || item.Category is -80 || item.HasContextTag("honey_source"));
 
 		private static bool GiantFlower(GiantCrop giant, out string[] harvest, GameLocation location)
 		{
@@ -164,8 +167,11 @@ namespace BetterBeehouses.framework
 			if (Config.config.AnythingHoney)
 				return true;
 
-			return ItemRegistry.GetData(index).Category == -80 ||
-				ItemContextTagManager.HasBaseTag(index, "honey_source");
+			var data = ItemRegistry.GetData(index);
+
+			return 
+				!(data.HasTypeBigCraftable() || data.Category == -999) && 
+				(data.Category == -80 || ItemContextTagManager.HasBaseTag(index, "honey_source"));
 		}
 	}
 }
