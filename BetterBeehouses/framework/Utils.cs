@@ -9,6 +9,7 @@ using StardewValley.GameData;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Utilities;
+using StardewValley.ItemTypeDefinitions;
 
 namespace BetterBeehouses.framework
 {
@@ -158,6 +159,20 @@ namespace BetterBeehouses.framework
         {
             var viewpos = Game1.viewport.Location;
             return new(local.X + viewpos.X, local.Y + viewpos.Y);
+        }
+
+        public static bool IsBeeHouse(this Item item)
+        {
+            return
+                item.QualifiedItemId == "(BC)10" ||
+                (Config.config.ModifyCustomBeehouses && item.HasContextTag("bee_house"));
+        }
+
+        public static bool IsBeeHouse(string id)
+        {
+            return
+                id == "(BC)10" ||
+                (Config.config.ModifyCustomBeehouses && ItemContextTagManager.HasBaseTag(id, "bee_house"));
         }
     }
 }

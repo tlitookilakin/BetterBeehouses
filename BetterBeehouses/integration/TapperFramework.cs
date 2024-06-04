@@ -46,8 +46,7 @@ namespace BetterBeehouses.integration
 					string key = pair.Key;
 					var entry = pair.Value;
 
-					if (key is not "(BC)10" && !(Config.config.ModifyCustomBeehouses &&
-					ItemContextTagManager.HasBaseTag(key, "bee_house")))
+					if (!Utils.IsBeeHouse(key))
 						continue;
 
 					var fruitRules = entry.FruitTreeOutputRules as IEnumerable<GenericSpawnItemDataWithCondition>;

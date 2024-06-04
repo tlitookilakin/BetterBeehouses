@@ -20,12 +20,8 @@ namespace BetterBeehouses.framework
 
 			foreach((var key, var machine) in data)
 			{
-				if (
-					ItemContextTagManager.HasBaseTag(key, "bee_house") &&
-					(key is "(BC)10" || Config.config.ModifyCustomBeehouses)
-				)
+				if (Utils.IsBeeHouse(key))
 				{
-					var t = ItemContextTagManager.HasBaseTag(key, "bee_house");
 					edited++;
 					try
 					{
@@ -57,6 +53,8 @@ namespace BetterBeehouses.framework
 		}
 		private static void EditSeason(MachineOutputRule rule, MachineData data)
 		{
+			rule.DaysUntilReady = Math.Min(rule.DaysUntilReady, Config.config.DaysToProduce);
+
 			var produce = Config.config.ProduceInWinter;
 			var str = produce switch
 			{
@@ -69,13 +67,7 @@ namespace BetterBeehouses.framework
 
 			if (rule.Triggers is null)
 			{
-				(rule.Triggers = new()).Add(
-					new()
-					{
-						Id = "Default",
-						Condition = str,
-					}
-				);
+				rule.Triggers = [new() { Id = "Default", Condition = str}];
 				ModEntry.monitor.Log("All triggers missing, adding default! Another mod is tampering with beehouse data.", LogLevel.Warn);
 			}
 			else
@@ -102,8 +94,11 @@ namespace BetterBeehouses.framework
 		}
 		private static void EditSpeed(MachineData data)
 		{
-			foreach (var output in data.OutputRules)
-				output.DaysUntilReady = Math.Min(output.DaysUntilReady, Config.config.DaysToProduce);
+			if (Config.config.UsableIn is Config.UsableOptions.Anywhere)
+				data.PreventTimePass.Remove(MachineTimeBlockers.Inside);
+
+			if (Config.config.ProduceInWinter is Config.ProduceWhere.Always)
+				data.PreventTimePass.Remove(MachineTimeBlockers.Winter);
 		}
 	}
 }

@@ -117,7 +117,7 @@ namespace BetterBeehouses.framework
 			}
 			foreach ((var pos, var obj) in ev.Added)
 			{
-				if (obj.HasContextTag("bee_house"))
+				if (obj.IsBeeHouse())
 				{
 					houses.Add(pos);
 					swarms.Add(GenerateSwarm());
@@ -152,7 +152,7 @@ namespace BetterBeehouses.framework
 
 			foreach (var obj in where.Objects.Values)
 			{
-				if (obj.HasContextTag("bee_house"))
+				if (obj.IsBeeHouse())
 				{
 					houses.Add(obj.TileLocation);
 					swarms.Add(GenerateSwarm());

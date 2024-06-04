@@ -29,9 +29,7 @@ namespace BetterBeehouses.patches
 				return true;
 
 			// not running, and not a beehouse
-			if (__instance.QualifiedItemId is not "(BC)10" &&
-				!Config.config.ModifyCustomBeehouses ||
-				!__instance.HasContextTag("bee_house"))
+			if (!__instance.IsBeeHouse())
 				return false;
 
 			var where = __instance.Location;
@@ -58,7 +56,7 @@ namespace BetterBeehouses.patches
 		private static Item GetOutputItem(Item result, SObject machine, Farmer who)
 		{
 			// only modify if the machine is a bee house and the output is honey
-			if (!machine.HasContextTag("bee_house") || result.QualifiedItemId is not "(O)340")
+			if (!machine.IsBeeHouse() || result.QualifiedItemId is not "(O)340")
 				return result;
 
 			result.Quality = GetQuality(who, result.Quality);
@@ -71,9 +69,10 @@ namespace BetterBeehouses.patches
 				return result;
 
 			if (Config.config.UseFlowerBoost)
-				result.Stack += Math.Max(
-					FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(machine.TileLocation)).Count()
-					- 1, 0) / Config.config.FlowersPerBoost;
+				result.Stack = 
+					result.Stack * 
+					Math.Max(FlowerFinder.GetAllNearFlowers(where, FlowerFinder.DefaultSearch(machine.TileLocation)).Count(), 1) 
+					/ Config.config.FlowersPerBoost;
 
 			return result;
 		}
