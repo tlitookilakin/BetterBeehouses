@@ -1,42 +1,58 @@
-﻿using BetterBeehouses.framework;
-using HarmonyLib;
-using Microsoft.Xna.Framework;
+﻿using HarmonyLib;
+using StardewModdingAPI;
 using StardewValley;
+using StardewValley.TerrainFeatures;
 using System;
-using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace BetterBeehouses.integration
 {
-    internal class WildFlowers
+	internal class WildFlowers
 	{
-		internal const string FLAG = "aedenthorn.Wildflowers/wild";
-		private static bool loaded = false;
-		private static Dictionary<string, Dictionary<Vector2, Crop>> wild_data;
+		internal static bool loaded = false;
+		internal static Func<Grass, Crop> GetWildFlower;
+
 		internal static bool Setup()
 		{
-			if (!ModEntry.helper.ModRegistry.IsLoaded("aedenthorn.Wildflowers"))
+			if (!ModEntry.helper.ModRegistry.IsLoaded("jpp.WildFlowersReimagined"))
 				return false;
 
-			loaded = true;
-			wild_data = ModEntry.helper.Reflection.GetField<Dictionary<string, Dictionary<Vector2, Crop>>>(
-				AccessTools.TypeByName("Wildflowers.ModEntry"), "cropDict").GetValue();
+			var flowerData = AccessTools.TypeByName("WildFlowersReimagined.FlowerGrass");
+			if (flowerData is null)
+				return false;
 
-			ModEntry.monitor.Log("Wildflowers detected. Stripping flower patch.");
-			var patch = AccessTools.TypeByName("Wildflowers.ModEntry+Utility_findCloseFlower_Patch")?.MethodNamed("Postfix");
-			if (patch is not null)
+			try
 			{
-				ModEntry.harmony.Unpatch(typeof(Utility).MethodNamed(nameof(Utility.findCloseFlower),
-					new[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) }),
-					patch);
-				return true;
+				GetWildFlower ??= BuildFlowerGetter(flowerData);
+				loaded = true;
+			} 
+			catch (Exception ex)
+			{
+				ModEntry.monitor.Log($"Failed to generate wildflowers getter: {ex}", LogLevel.Warn);
 			}
-			ModEntry.monitor.Log("Could not find patch method; attempting broad strip.");
-			ModEntry.harmony.Unpatch(typeof(Utility).MethodNamed(nameof(Utility.findCloseFlower),
-					new[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) }),
-					HarmonyPatchType.Postfix, "aedenthorn.Wildflowers");
+
 			return true;
 		}
-		internal static Dictionary<Vector2, Crop> GetData(GameLocation where)
-			=> (!loaded || wild_data is null || !wild_data.TryGetValue(where.Name, out var ret)) ? null : ret;
+
+		private static Func<Grass, Crop> BuildFlowerGetter(Type dataType)
+		{
+			// (Grass grass) => (grass as FlowerGrass)?.Crop;
+
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
+			var method = new DynamicMethod("GetWildFlower", typeof(Crop), [typeof(Grass)], true);
+			var il = method.GetILGenerator();
+			var skip = il.DefineLabel();
+
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Isinst, dataType);
+			il.Emit(OpCodes.Dup);
+			il.Emit(OpCodes.Brfalse, skip);
+			il.Emit(OpCodes.Callvirt, dataType.GetProperty("Crop", flags).GetMethod);
+			il.MarkLabel(skip);
+			il.Emit(OpCodes.Ret);
+
+			return method.CreateDelegate<Func<Grass, Crop>>();
+		}
 	}
 }

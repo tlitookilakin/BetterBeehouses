@@ -21,8 +21,6 @@ namespace BetterBeehouses.framework
 							for (int y = 0; y < giant.height.Value; y++)
 									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), (harvest, giant));
 
-			var wildflowers = WildFlowers.GetData(loc);
-
 			foreach (var currentTile in tiles)
 			{
 				// giant crops
@@ -30,12 +28,6 @@ namespace BetterBeehouses.framework
 				{
 					for (int i = 0; i < gc.harvest.Length; i++)
 						yield return new(gc.source, currentTile, gc.harvest[i]);
-				}
-
-				// wildflowers
-				else if (wildflowers is not null && wildflowers.TryGetValue(currentTile, out var wilf))
-				{
-					yield return new(wilf);
 				}
 
 				// objects on floor
@@ -82,6 +74,10 @@ namespace BetterBeehouses.framework
 					// crop
 					if (tf is HoeDirt dirt && IsGrown(dirt.crop, extraCheck) && IndexIsFlower(dirt.crop.indexOfHarvest.Value))
 						yield return new(dirt.crop);
+
+					// wildlfower grass
+					else if (tf is Grass grass && WildFlowers.loaded && WildFlowers.GetWildFlower(grass) is Crop crop && IsGrown(crop, extraCheck))
+						yield return new(crop);
 
 					// tree
 					else if (tf is FruitTree tree && Config.config.UseFruitTrees && tree.fruit.Count is > 0)
