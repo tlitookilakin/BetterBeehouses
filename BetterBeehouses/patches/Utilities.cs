@@ -60,6 +60,7 @@ namespace BetterBeehouses.patches
 					what.crop.modData["tlitookilakin.BetterBeehouses.FromPot"] = "T";
 				}
 
+				what.crop.modData["tlitookilakin.BetterBeehouses.SourceType"] = what.type;
 				return what.crop;
 			}
 
