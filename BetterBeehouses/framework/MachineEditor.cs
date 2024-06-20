@@ -1,8 +1,8 @@
 ﻿using StardewModdingAPI;
-using StardewValley;
 using StardewValley.GameData.Machines;
 using System;
 using System.Collections.Generic;
+using static StardewValley.GameData.QuantityModifier;
 
 namespace BetterBeehouses.framework
 {
@@ -53,8 +53,6 @@ namespace BetterBeehouses.framework
 		}
 		private static void EditSeason(MachineOutputRule rule, MachineData data)
 		{
-			rule.DaysUntilReady = Math.Min(rule.DaysUntilReady, Config.config.DaysToProduce);
-
 			var produce = Config.config.ProduceInWinter;
 			var str = produce switch
 			{
@@ -99,6 +97,13 @@ namespace BetterBeehouses.framework
 
 			if (Config.config.ProduceInWinter is Config.ProduceWhere.Always)
 				data.PreventTimePass.Remove(MachineTimeBlockers.Winter);
+
+			var modifiers = data.ReadyTimeModifiers ??= [];
+			modifiers.Add(new() {
+				Amount = Config.config.DaysToProduce / 4f,
+				Id = "BetterBeehouses",
+				Modification = ModificationType.Multiply
+			});
 		}
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using StardewModdingAPI.Framework.Logging;
 using StardewValley;
 using StardewValley.TerrainFeatures;
 

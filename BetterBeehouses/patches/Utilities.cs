@@ -12,7 +12,7 @@ namespace BetterBeehouses.patches
 		{
 			ModEntry.harmony.Patch(
 				typeof(Utility).GetMethod(nameof(Utility.findCloseFlower),
-				new[] { typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>) }),
+				[typeof(GameLocation), typeof(Vector2), typeof(int), typeof(Func<Crop, bool>)]),
 				prefix: new(typeof(Utilities), nameof(preCheck))
 			);
 		}
@@ -24,9 +24,6 @@ namespace BetterBeehouses.patches
 
 			if (Config.config.UseRandomFlower)
 			{
-				if (ModEntry.monitor.IsVerbose)
-					ModEntry.monitor.Log($"Beginning search for flowers @ [{startTileLocation.X}, {startTileLocation.Y}] in {location.DisplayName}");
-
 				var items = FlowerFinder.GetAllNearFlowers(
 					location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
 				).ToArray();
@@ -39,9 +36,6 @@ namespace BetterBeehouses.patches
 			}
 			else if (Config.config.UsingFlowerRules(location))
 			{
-				if (ModEntry.monitor.IsVerbose)
-					ModEntry.monitor.Log($"Beginning search for flowers @ [{startTileLocation.X}, {startTileLocation.Y}] in {location.DisplayName}");
-
 				__result = CropFromIndex(
 					FlowerFinder.GetAllNearFlowers(location, FlowerFinder.DefaultSearch(startTileLocation, range), additional_check
 				).FirstOrDefault());
@@ -64,7 +58,7 @@ namespace BetterBeehouses.patches
 				return what.crop;
 			}
 
-			if (what.ID == "")
+			if (what.ID is "" or null)
 				return null;
 
 			Crop ret = new();
