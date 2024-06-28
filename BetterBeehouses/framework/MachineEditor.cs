@@ -25,7 +25,7 @@ namespace BetterBeehouses.framework
 					edited++;
 					try
 					{
-						EditData(machine);
+						EditData(machine, key);
 					}
 					catch (AssetEditException ex)
 					{
@@ -41,17 +41,17 @@ namespace BetterBeehouses.framework
 			if (edited is 0)
 				ModEntry.monitor.Log("No valid machine data found for any bee house!", LogLevel.Warn);
 		}
-		private static void EditData(MachineData data)
+		private static void EditData(MachineData data, string key)
 		{
 			if (data.OutputRules is null || data.OutputRules.Count is 0)
 				throw new AssetEditException("No outputs detected! Another mod is likely broken!");
 
 			foreach (var rule in data.OutputRules)
-				EditSeason(rule, data);
+				EditSeason(rule, data, key);
 
 			EditSpeed(data);
 		}
-		private static void EditSeason(MachineOutputRule rule, MachineData data)
+		private static void EditSeason(MachineOutputRule rule, MachineData data, string key)
 		{
 			var produce = Config.config.ProduceInWinter;
 			var str = produce switch
@@ -65,21 +65,32 @@ namespace BetterBeehouses.framework
 
 			if (rule.Triggers is null)
 			{
-				rule.Triggers = [new() { Id = "Default", Condition = str}];
-				ModEntry.monitor.Log("All triggers missing, adding default! Another mod is tampering with beehouse data.", LogLevel.Warn);
+				if (key is "(BC)10")
+				{
+					rule.Triggers = [new() { Id = "Default", Condition = str }];
+					ModEntry.monitor.Log("All triggers missing, adding default! Another mod is tampering with beehouse data.", LogLevel.Warn);
+				}
+				else
+				{
+					ModEntry.monitor.Log($"All triggers missing for {key}, ignoring. Maybe invalid data?", LogLevel.Info);
+				}
 			}
 			else
 			{
 				foreach (var trigger in rule.Triggers)
-					trigger.Condition = trigger.Condition.Replace("!LOCATION_SEASON Target Winter", str, StringComparison.OrdinalIgnoreCase);
+					if (trigger.Condition is not null)
+						trigger.Condition = trigger.Condition.Replace("!LOCATION_SEASON Target Winter", str, StringComparison.OrdinalIgnoreCase);
 			}
 
-			data.ClearContentsOvernightCondition = produce switch
+			if (data.ClearContentsOvernightCondition is not null)
 			{
-				Config.ProduceWhere.Always => "FALSE",
-				Config.ProduceWhere.Indoors => data.ClearContentsOvernightCondition.ListAppend($" !{GetIndoorsQuery()}"),
-				_ => data.ClearContentsOvernightCondition
-			};
+				data.ClearContentsOvernightCondition = produce switch
+				{
+					Config.ProduceWhere.Always => "FALSE",
+					Config.ProduceWhere.Indoors => data.ClearContentsOvernightCondition.ListAppend($" !{GetIndoorsQuery()}"),
+					_ => data.ClearContentsOvernightCondition
+				};
+			}
 		}
 		public static string GetIndoorsQuery()
 		{
@@ -93,10 +104,10 @@ namespace BetterBeehouses.framework
 		private static void EditSpeed(MachineData data)
 		{
 			if (Config.config.UsableIn is Config.UsableOptions.Anywhere)
-				data.PreventTimePass.Remove(MachineTimeBlockers.Inside);
+				data.PreventTimePass?.Remove(MachineTimeBlockers.Inside);
 
 			if (Config.config.ProduceInWinter is Config.ProduceWhere.Always)
-				data.PreventTimePass.Remove(MachineTimeBlockers.Winter);
+				data.PreventTimePass?.Remove(MachineTimeBlockers.Winter);
 
 			var modifiers = data.ReadyTimeModifiers ??= [];
 			modifiers.Add(new() {
