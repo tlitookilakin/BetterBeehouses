@@ -32,13 +32,13 @@ namespace BetterBeehouses
 			ModID = ModManifest.UniqueID;
 			api = new();
 			helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-			helper.Events.Content.AssetRequested += AssetRequested;
 			i18n = helper.Translation;
 
 			GSQ.Register();
 		}
 		private void OnGameLaunched(object sender, GameLaunchedEventArgs ev)
 		{
+			helper.Events.Content.AssetRequested += AssetRequested;
 			Utilities.Init();
 			BeeManager.Init();
 			Machines.Patch(harmony);
