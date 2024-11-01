@@ -19,7 +19,7 @@ namespace BetterBeehouses.framework
 					if (clump is GiantCrop giant && GiantFlower(giant, out var harvest, loc))
 						for (int x = 0; x < giant.width.Value; x++)
 							for (int y = 0; y < giant.height.Value; y++)
-									GiantCrops.Add(new(giant.Tile.X + x, giant.Tile.Y + y), (harvest, giant));
+									GiantCrops.TryAdd(new(giant.Tile.X + x, giant.Tile.Y + y), (harvest, giant));
 
 			foreach (var currentTile in tiles)
 			{
