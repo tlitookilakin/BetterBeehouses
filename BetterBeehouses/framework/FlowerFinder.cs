@@ -52,7 +52,7 @@ namespace BetterBeehouses.framework
 								yield return new(crop, currentTile); //flower in pot
 
 							// bush in pot
-							if (Config.config.UseBushes && pot.bush.Value is Bush bush)
+							if (Config.config.UseBushes && pot.bush.Value is Bush bush && bush.readyForHarvest())
 							{
 								var shake = bush.GetShakeOffItem();
 								if (IndexIsFlower(shake))
@@ -93,7 +93,7 @@ namespace BetterBeehouses.framework
 					{
 						Vector2 targ = new(currentTile.X - i, currentTile.Y);
 						if (loc.terrainFeatures.TryGetValue(targ, out var tf) && tf is Bush bush &&
-							bush.getBoundingBox().Width > i && bush.inBloom())
+							bush.getBoundingBox().Width > i && bush.readyForHarvest())
 						{
 							var item = bush.GetShakeOffItem();
 							if (IndexIsFlower(item))
