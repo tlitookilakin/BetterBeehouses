@@ -40,7 +40,7 @@ namespace BetterBeehouses.framework
 			if (!Game1.currentLocation.Objects.TryGetValue(mouseTile, out var obj))
 				return;
 
-			if (obj.IsBeeHouse())
+			if (!obj.IsBeeHouse())
 				return;
 
 			var b = e.SpriteBatch;
